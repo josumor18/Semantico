@@ -62,7 +62,11 @@ parser code
     private static ArrayList<Simbolo> tablaTemp = new ArrayList<Simbolo>();
     
     private void crear_Global_ydel(String id){
-    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valoresDecMul.get(0));
+    	String valAux = "";
+    	if(valoresDecMul.size() > 0){
+    		valAux = valoresDecMul.get(0);
+    	}
+    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valAux);
     	semantico.addSimbolo(nSim);
         tipo = "";
         valorV = "";

@@ -15,6 +15,7 @@ public class Simbolo {
 		this.tipo = tipo;
 		this.nombre = nombre;
 		this.valor = valor;
+		System.out.println(tipo + " " + nombre + "= " + valor);
 	}
 
 	public Identificador getId() {
@@ -55,5 +56,9 @@ public class Simbolo {
 
 	public void setTablaG(ArrayList<Simbolo> tablaG) {
 		this.tablaG = tablaG;
+	}
+	
+	public void addSimboloToTabla(Simbolo nSimbolo){
+		tablaG.add(nSimbolo);
 	}
 }

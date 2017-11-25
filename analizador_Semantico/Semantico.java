@@ -3,11 +3,26 @@ package analizador_Semantico;
 import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 
+
 public class Semantico {
 
-	static ArrayList<Simbolo> tablaG = new ArrayList<Simbolo>();
-	public Semantico(){
+	private ArrayList<Simbolo> tablaG = new ArrayList<Simbolo>();
+	
+	public static Semantico _Instancia;
+	
+	public static Semantico getInstance(){   // singleton xD
+		if (_Instancia == null){
+			_Instancia = new Semantico();
+		}
+		return _Instancia;
+	}
+	
+	private Semantico(){
 		
+	}
+	
+	public void prepararAnalisis(){
+		tablaG.clear();
 	}
 	
 	public void addSimbolo(Simbolo new_Simbolo){
@@ -18,10 +33,10 @@ public class Semantico {
 					if(s.getValor().equals("") && !new_Simbolo.getValor().equals("")){
 						s.setValor(new_Simbolo.getValor());
 					}
-					existe = true;
 				}else{
 					System.out.println("AQUI HAY UN ERROR DE REDEFINICION CON TIPO DIFERENTE");
 				}
+				existe = true;
 			}
 		}
 		if(!existe){
@@ -31,15 +46,17 @@ public class Semantico {
 	}
 	
 	public void addTablaToSimbolo(ArrayList<Simbolo> tablaFuncion){
-		tablaG.get(tablaG.size()-1).setTablaG(tablaFuncion);
+		for(Simbolo s:tablaFuncion){
+			tablaG.get(tablaG.size()-1).addSimboloToTabla(s);
+		}
 	}
-        
+    /*
     public static void printTablaG(){        
         for(Simbolo s: tablaG){
             System.out.println(s.getId() +" " + s.getNombre() + " " + s.getTipo());
         }
     }
-    
+    */
     public boolean verificarLocal(Simbolo sim, ArrayList<Simbolo> tLocales){
 		for(Simbolo s:tLocales){
 			if(s.getNombre().equals(sim.getNombre())){
@@ -65,8 +82,14 @@ public class Semantico {
     }
     
     public void printTablaSimbolos(){
+    	System.out.println("Nuevo despliegue::::::::::::::::::::::");
+    	
     	for(Simbolo s:tablaG){
-    		System.out.println(s.getNombre());
+    		String imp = s.getNombre();
+    		if(s.getId() == Identificador.Variable){
+    			imp+= ": " + s.getValor();
+    		}
+    		System.out.println(imp);
     		for(Simbolo sh:s.getTablaG()){
     			System.out.println("\t" + sh.getNombre());
     		}

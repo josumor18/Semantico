@@ -23,6 +23,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import analizador_Lexico.AnalizadorLexico;
 import analizador_Lexico.Lexer;
+import analizador_Semantico.Semantico;
 import analizador_Sintactico.Sintactico;
 
 import java.awt.event.MouseMotionAdapter;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -137,6 +139,9 @@ public class Inicio extends JFrame {
 	}
 	
 	private void analizar()throws FileNotFoundException, IOException{
+		Semantico sem = Semantico.getInstance();
+		sem.prepararAnalisis();
+		
 		if(!(archivo.equals(""))){
 			System.out.println("Analisis sintactico del archivo: " + archivo);
 			String res = "\nRESULTADO ANALISIS LEXICO\n";

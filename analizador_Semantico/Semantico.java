@@ -85,13 +85,21 @@ public class Semantico {
     	System.out.println("Nuevo despliegue::::::::::::::::::::::");
     	
     	for(Simbolo s:tablaG){
+                String imp2 = "";
     		String imp = s.getNombre();
+                imp+= "  " + s.getTipo() + "  ";
     		if(s.getId() == Identificador.Variable){
     			imp+= ": " + s.getValor();
     		}
     		System.out.println(imp);
     		for(Simbolo sh:s.getTablaG()){
-    			System.out.println("\t" + sh.getNombre());
+                        imp2 += "\t" + sh.getTipo() + "   " + sh.getNombre();
+    			
+                        if(sh.getId() == Identificador.Variable){
+                               imp2 += "  :  " + sh.getValor();
+                        }
+                        System.out.println(imp2);
+                        imp2 = "";
     		}
     	}
     }

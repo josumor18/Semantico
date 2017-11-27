@@ -14,11 +14,15 @@ import java.util.ArrayList;
 parser code
 {:
     public String resultado="";
+    private Semantico semantico = Semantico.getInstance();
+    private static ArrayList<Simbolo> tablaTemp = new ArrayList<Simbolo>();
+    private static ArrayList<Integer> lineaTemp = new ArrayList<Integer>();
     String tipo = "";  //aun necesario
     String tipoB = ""; //no encuentro utilidad
     String valorV = "";
-    ArrayList<String> valoresDecMul = new ArrayList<String>();
+    Stack<String> valoresDecMul = new Stack<String>();
     Stack<String> pilaTipo = new Stack<String>();
+    int cantParametros = 0;
 
 
     //Metodo al que se llama automaticamente ante algun error sintactico
@@ -46,8 +50,8 @@ parser code
         int fila = s.right;
         int columna = s.left;
         
-        resultado+= "\n\t� Error Sintactico IRRECUPERABLE !";
-        System.out.println("� Error Sintactico IRRECUPERABLE !");
+        resultado+= "\n\t Error Sintactico IRRECUPERABLE !";
+        System.out.println("Error Sintactico IRRECUPERABLE !");
         resultado+= "\n\t\t\tLexema: "+lexema;
         System.out.println("\t\tLexema: "+lexema);
         resultado+= "\n\t\t\tLinea: "+fila;
@@ -60,80 +64,55 @@ parser code
 
 
     //Metodo prueba para pasar cosas a otra clase
-    private Semantico semantico = Semantico.getInstance();
-    private static ArrayList<Simbolo> tablaTemp = new ArrayList<Simbolo>();
     
-    private void crear_Global_ydel(String id){
-    	String valAux = "";
-    	if(valoresDecMul.size() > 0){
-    		valAux = valoresDecMul.get(0);
-    	}
-    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valAux);
-    	semantico.addSimbolo(nSim);
-        //tipo = "";
+    private void crear_Global_ydel(String id, int linea){
+    	
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
+    	semantico.addSimbolo(nSim, linea);
         valorV = "";
-        /*
-        if(valoresDecMul.size() > 0){
-        	semantico.addValoresGlobales(valoresDecMul);
-        }*/
-        /*
-        //....................
-        System.out.println("Imprime lista valores::::::::::::::::::::::::");
-        for(String s:valoresDecMul){
-        	System.out.println("Valor: " + s);
-        }
-        */
-        valoresDecMul.clear();
     }
     
-    private void crear_Global(String id){
+    private void crear_Global(String id, int linea){
     	Simbolo nSim;
         String tipoTemp = pilaTipo.pop();
         pilaTipo.push(tipoTemp);
         pilaTipo.push(tipoTemp);
         
-        if(!valoresDecMul.isEmpty()){
-
-            nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.get(valoresDecMul.size()-1));
-        }
-
-        else{
-            nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, "");
-        }
-    	semantico.addSimbolo(nSim);
+        nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
+        
+    	semantico.addSimbolo(nSim, linea);
     	valorV = "";
-    	if(!valoresDecMul.isEmpty()){
-            valoresDecMul.remove(valoresDecMul.size()-1);
-        }
     }
 
-    private void crear_Funcion(String id){
-    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Funcion, id, "");
-        //tipo = "";
-    	semantico.addSimbolo(nSim);
+    private void crear_Funcion(String id, int linea){
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Funcion, id, cantParametros);
+		//System.out.println("F: " + nSim.getNombre() + "; T: " + pilaTipo.pop());
+        cantParametros = 0;
+    	semantico.addSimbolo(nSim, linea);
     	
-    	tablaTemp = semantico.verificarLocales(tablaTemp);
+    	tablaTemp = semantico.verificarLocales(tablaTemp, lineaTemp);
     	semantico.addTablaToSimbolo(tablaTemp);
     	tablaTemp.clear();
-
-    	semantico.printTablaSimbolos();
-    	
+    	lineaTemp.clear();
+    	pilaTipo.clear();
     }
     
-    private void crear_Local_ydel(String id){
-	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valorV);
-        //tipo = "";
+    private void crear_Local_ydel(String id, int linea){
+		Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
+
         valorV = "";
     	tablaTemp.add(nSim);
+    	lineaTemp.add(linea);
     }
 
-    private void crear_Local(String id){
+    private void crear_Local(String id, int linea){
         String tipoTemp = pilaTipo.pop();
         pilaTipo.push(tipoTemp);
         pilaTipo.push(tipoTemp);
-    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valorV);
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
     	valorV = "";
     	tablaTemp.add(nSim);
+    	lineaTemp.add(linea);
     }
 
     public static void print_tablaTemp(){
@@ -141,11 +120,6 @@ parser code
             System.out.println(s.getId() +" " + s.getNombre() +" " + s.getTipo());
         }   
     }
-
-
-
-
-    
 :}
 
 //------> Codigo para las acciones gramaticales
@@ -218,12 +192,13 @@ GLOBAL::=  GLOBAL_FACT GLOBAL
           |error:s FUNCS:z {:resultado+= "\n\tError, falta punto y coma. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};//{:System.out.println("\tError, falta punto y coma. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
           
 GLOBAL_FACT::= INI_A PT
-	       |TIPO_GLOBAL Identificador:id DECLARS_BAS1 PT {:crear_Global_ydel(id.toString());:}
-	       												   //setValorGlobal();:}
-	       |TIPO_GLOBAL Identificador:id PT {:crear_Global_ydel(id.toString());:}
-               |TIPO_GLOBAL PT
-               |error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1);:}	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1));:}
-               |TIPO_GLOBAL error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
+	       	  |TIPO_GLOBAL Identificador:id DECLARS_BAS1 PT {:crear_Global_ydel(id.toString(), (idright+1));:}
+	          |TIPO_GLOBAL Identificador:id PT {:valoresDecMul.push("");	crear_Global_ydel(id.toString(), (idright+1));:}
+	          |TIPO_GLOBAL Identificador:id DECLARS_BAS1 coma INI_A PT {:crear_Global_ydel(id.toString(), (idright+1));:}
+	          |TIPO_GLOBAL Identificador:id coma INI_A PT {:valoresDecMul.push("");	crear_Global_ydel(id.toString(), (idright+1));:}
+              |TIPO_GLOBAL PT
+              |error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1);:}	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1));:}
+              |TIPO_GLOBAL error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
 
 PT::= puntoycoma PT
      |puntoycoma;
@@ -233,29 +208,30 @@ FUNCS::= FUNCS_FACT PT FUNCS
          |FUNCS_FACT PT
          |FUNCS_FACT;
          
-FUNCS_FACT::= TIPO_GLOBAL Identificador:id para FUNCIONES {:crear_Funcion(id.toString());:}
-              |Identificador:id para FUNCIONES  {:tipo = "void";    crear_Funcion(id.toString());:}
-              |rvoid:t Identificador:id para FUNCIONES {:tipo = t.toString(); crear_Funcion(id.toString());:}
+FUNCS_FACT::= TIPO_GLOBAL Identificador:id para FUNCIONES {:crear_Funcion(id.toString(), (idright+1));:}
+              |Identificador:id para FUNCIONES  {:pilaTipo.push("void");    crear_Funcion(id.toString(), (idright+1));:}
+              |rvoid:t Identificador:id para FUNCIONES {:pilaTipo.push(t.toString()); crear_Funcion(id.toString(), (idright+1));:}
               |error:s FUNCIONES2:z {:resultado+= "\n\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
               
    
-INI_A::= Identificador:id DECLARS_BAS1  {:crear_Global(id.toString());:}
-         |Identificador:id   {:crear_Global(id.toString());:}
+INI_A::= Identificador:id DECLARS_BAS1  {:crear_Global(id.toString(), (idright+1));:}
+         |Identificador:id   {:valoresDecMul.push("");	crear_Global(id.toString(), (idright+1));:}
+         |Identificador:id DECLARS_BAS1 coma INI_A {:crear_Global(id.toString(), (idright+1));:}
+         |Identificador:id coma INI_A  {:valoresDecMul.push("");	crear_Global(id.toString(), (idright+1));:}
          |error:s DECLARS_BAS1:z {:resultado+= "\n\tError, se esperaba un identificador. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError, se esperaba un identificador. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
 
 TIPO_GLOBAL::= NCONST
               |TIPO;
 
-DECLARS_BAS1::= coma INI_A
-               |ASIG_EB DECLARS_BAS1
+DECLARS_BAS1::= ASIG_EB DECLARS_BAS1
                |ASIG_EB;
 
-ASIG_EB::= igual EXP_BAS {:	valoresDecMul.add(valorV); valorV = "";:};
+ASIG_EB::= igual EXP_BAS {:	valoresDecMul.push(valorV); valorV = "";:};
 
 EXP_BAS::= para EXP_BAS parc {:valorV = "(" + valorV + ")";:}
            |EXP_BAS ARIT1 EXP_BAS
            |menos:v EXP {:valorV = v.toString() + valorV;:}
-           |mas EXP //Aqui se deja igual porque un m�s (+) no cambia el valor
+           |mas EXP //Aqui se deja igual porque un mas (+) no cambia el valor
            |NOT_REP EXP
            |num:v {:valorV = valorV + v.toString();:}
            |txt:v {:valorV = valorV + v.toString();:};
@@ -271,8 +247,8 @@ FUNCIONES2::= corcha CUERPO_FUNCION corchc
              |corcha error:s corchc:z {:resultado+= "\n\tError. La funcion debe tener cuerpo. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError. La funcion debe tener cuerpo. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
              |error:s corchc:z {:resultado+= "\n\tError. Falta llave que abre. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError. Falta llave que abre. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
 
-PARAMS2::= TIPO Identificador:id coma PARAMS2 {:crear_Local_ydel(id.toString());:}
-          |TIPO Identificador:id {:crear_Local_ydel(id.toString());:}
+PARAMS2::= TIPO Identificador:id coma PARAMS2 {:cantParametros++;	valoresDecMul.push("");	crear_Local_ydel(id.toString(), (idright+1));:}
+          |TIPO Identificador:id {:cantParametros++;	valoresDecMul.push("");	crear_Local_ydel(id.toString(), (idright+1));:}
           |TIPO Identificador error:s PARAMS2:z {:resultado+= "\n\tError, se esperaba ','. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError, se esperaba ','. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
 
 CUERPO_FUNCION::= DECLAR CUERPO
@@ -289,12 +265,12 @@ DECLAR::= NCONST DECLAR1 DECLAR00 {:tipo = "";:}
 DECLAR00::= puntoycoma DECLAR
            |puntoycoma;
 
-DECLAR1::= Identificador:id {:crear_Local(id.toString());:}
-          |Identificador:id DECLAR2 {:crear_Local(id.toString());:};
+DECLAR1::= Identificador:id {:valoresDecMul.push("");	valorV = "";	crear_Local(id.toString(), (idright+1));:}
+          |Identificador:id DECLAR2 {:crear_Local(id.toString(), (idright+1));:};
 
-DECLAR2::= igual EXP DECLAR3 {:System.out.println(valorV);:}
+DECLAR2::= igual EXP DECLAR3 {:valoresDecMul.push(valorV);	System.out.println(valorV);:}
           |DECLAR3
-          |igual EXP {:System.out.println(valorV);:};
+          |igual EXP {:valoresDecMul.push(valorV);	valorV = "";	System.out.println(valorV);:};
 
 DECLAR3::= coma DECLAR1;
 
@@ -465,12 +441,12 @@ RETORNO1::= EXPRESION
 
 EXP_ASIG::= ARIT_ASIG EXP;
 
-EXP::= Identificador para VALS parc
-       |Identificador para parc
+EXP::= Identificador:i para VALS parc {:valorV = i.toString() + "(" + valorV + ")";:}
+       |Identificador:i para parc {:valorV = i.toString() + "()";:} 
        |EXP_COM;
 
 EXP_COM::= EXP_COM2 OPERS EXP_COM
-          |menos EXP
+          |menos EXP {:valorV = "-" + valorV;:}
           |mas EXP
           |NOT_REP EXP
           |EXP_COM2;
@@ -478,10 +454,10 @@ EXP_COM::= EXP_COM2 OPERS EXP_COM
 NOT_REP::= not:v NOT_REP {:valorV = v.toString() + valorV;:}
 		  |not:v {:valorV = v.toString() + valorV;:};
 
-EXP_COM2::= para EXP parc
+EXP_COM2::= para EXP parc {:valorV = "(" + valorV + ")";:}
 		   |TERM;
 
-VALS::= EXP coma VALS
+VALS::= EXP coma VALS {:valorV = "," + valorV;:}
        |EXP;
 
 OPERS::= ARIT1
@@ -502,14 +478,14 @@ ARIT_ASIG::= igual
 ARIT_ASIG2::= masmas
              |menosmenos;
 
-BOOLS::= igualigual
-        |mayque
-        |may
-        |menque
-        |men
-        |dif
-        |or
-        |and;
+BOOLS::= igualigual:i {:valorV = i.toString();:}
+        |mayque:m {:valorV = m.toString();:}
+        |may:m {:valorV = m.toString();:}
+        |menque:m {:valorV = m.toString();:}
+        |men:m {:valorV = m.toString();:}
+        |dif:d {:valorV = d.toString();:}
+        |or:o {:valorV = o.toString();:}
+        |and:a {:valorV = a.toString();:};
 
 NCONST::= CONST_REP TIPO
          |TIPO CONST_REP
@@ -530,6 +506,6 @@ TIPO_MODI::= rlong:t {:tipo+= t.toString()+" ";:}
             |rlong:t rlong:tt {:tipo+= t.toString() +" "+ tt.toString()+" ";:}
             |rshort:t {:tipo+= t.toString()+" ";:};
 
-TERM::= num
-       |txt
-       |Identificador;
+TERM::= num:n {:valorV = n.toString();:}
+       |txt:t {:valorV = t.toString();:}
+       |Identificador:i {:valorV = i.toString();:};

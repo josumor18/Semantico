@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -147,7 +148,7 @@ public class Inicio extends JFrame {
 			String res = "\nRESULTADO ANALISIS LEXICO\n";
 	        System.out.println("RESULTADO ANALISIS LEXICO\n");
 	        res+= AnalizadorLexico.ejecutarAnalisis(archivo);
-			System.out.println("- " + res);
+			//System.out.println("- " + res);
 			res+= "\n\n--------------------------------------------------------------------------------";
 			System.out.println("\n--------------------------------------------------------------------------------");
 	        
@@ -159,6 +160,7 @@ public class Inicio extends JFrame {
 	        System.out.println("- Lista de errores sintacticos encontrados:");
 	        try {
 	            sintactico.parse();
+	            sem.printTablaSimbolos();
 	            res+= sintactico.resultado;
 	            System.out.println(sintactico.resultado);
 	            System.out.println("\n____________________________________________________________________________________________________________________________________________\n");
@@ -181,6 +183,46 @@ public class Inicio extends JFrame {
 		//String path = "C:/Users/Diego Armando/Documents/U/segundo semestre 2017/Compiladores e Interpretes/progra 1 - Analizador léxico/Analizador Lexico/src/analizador_Lexico/regexp.flex";
 		//String path = "C:/Users/Josu�/Documents/Programas Java/Parser/src/analizadores/regexp.flex";
 		//generateLexer(path);
+		
+		//////////////////////////////////////////////////
+		String valor = "4*(2/(8+6-4)-4)%3";
+		String[] h = valor.split("\\*");
+		for(String f:h){
+			System.out.println(f);
+		}
+		
+		ArrayList<String> valorSplited = new ArrayList<String>();
+		String[] separador = {"\\)","\\*","\\/","%","\\+","-"};
+		String[] valsPar = valor.split("\\(");
+		for(String s:valsPar){
+			if(!s.isEmpty()){
+				valorSplited.add(s);
+				valorSplited.add("(");
+			}
+		}
+		
+		for(String sep:separador){
+			for(int i = 0; i < valorSplited.size(); i++){
+				String[] aux = valorSplited.get(i).split(sep);
+				if(aux.length > 1){
+					valorSplited.remove(i);
+					int i_aux = 0;
+					for(String sA:aux){
+						if(!sA.isEmpty()){
+							valorSplited.add(i+i_aux, sA);
+							valorSplited.add(sep);
+							i_aux+= 2;
+						}
+					}
+				}
+			}
+		}
+		
+		for(String s:valorSplited){
+			System.out.println(s);
+		}
+		//////////////////////////////////////////////////
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

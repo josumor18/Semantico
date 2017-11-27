@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Semantico {
 
 	private ArrayList<Simbolo> tablaG = new ArrayList<Simbolo>();
+	private ArrayList<String> errores = new ArrayList<String>();
 	
 	public static Semantico _Instancia;
 	
@@ -23,9 +24,10 @@ public class Semantico {
 	
 	public void prepararAnalisis(){
 		tablaG.clear();
+		errores.clear();
 	}
 	
-	public void addSimbolo(Simbolo new_Simbolo){
+	public void addSimbolo(Simbolo new_Simbolo, int linea){
 		Boolean existe = false;
 		for(Simbolo s:tablaG){
 			if(s.getNombre().equals(new_Simbolo.getNombre())){
@@ -34,7 +36,8 @@ public class Semantico {
 						s.setValor(new_Simbolo.getValor());
 					}
 				}else{
-					System.out.println("AQUI HAY UN ERROR DE REDEFINICION CON TIPO DIFERENTE");
+					System.out.println("Error. Se redefine una variable con diferente ripo. Linea: " + linea);
+					errores.add("Error. Se redefine una variable con diferente ripo. Linea: " + linea);
 				}
 				existe = true;
 			}
@@ -67,36 +70,37 @@ public class Semantico {
 		return false;
     }
     
-    public ArrayList<Simbolo> verificarLocales(ArrayList<Simbolo> tablaLocales){
+    public ArrayList<Simbolo> verificarLocales(ArrayList<Simbolo> tablaLocales, ArrayList<Integer> lineas){
     	ArrayList<Simbolo> tLocales = new ArrayList<Simbolo>();
-    	
+    	int i = 0;
     	for(Simbolo s:tablaLocales){
     		if(verificarLocal(s, tLocales)){
-    			System.out.println("ERROR. YA EXISTE LA VARIABLE LOCAL: " + s.getNombre());
+    			System.out.println("Error. Ya existe la variable local '" + s.getNombre() + ". Linea: " + lineas.get(i));
+    			errores.add("Error. Ya existe la variable local '" + s.getNombre() + "'. Linea: " + lineas.get(i));
     		}else{
     			tLocales.add(s);
     		}
+    		i++;
     	}
     	
     	return tLocales;
     }
     
     public void printTablaSimbolos(){
-    	System.out.println("Nuevo despliegue::::::::::::::::::::::");
+    	System.out.println("Tabla de simbolos:");
     	
     	for(Simbolo s:tablaG){
                 String imp2 = "";
-    		String imp = s.getNombre();
-                imp+= "  " + s.getTipo() + "  ";
+    		String imp = s.getTipo() + " " + s.getNombre();
     		if(s.getId() == Identificador.Variable){
-    			imp+= ": " + s.getValor();
+    			imp+= "= " + s.getValor();
     		}
     		System.out.println(imp);
     		for(Simbolo sh:s.getTablaG()){
-                        imp2 += "\t" + sh.getTipo() + "   " + sh.getNombre();
+                        imp2 += "\t" + sh.getTipo() + " " + sh.getNombre();
     			
                         if(sh.getId() == Identificador.Variable){
-                               imp2 += "  :  " + sh.getValor();
+                               imp2 += "= " + sh.getValor();
                         }
                         System.out.println(imp2);
                         imp2 = "";

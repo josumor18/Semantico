@@ -2,13 +2,15 @@ package analizador_Semantico;
 
 import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
+import java.util.Stack;
 
 
 public class Semantico {
 
 	private ArrayList<Simbolo> tablaG = new ArrayList<Simbolo>();
 	private ArrayList<String> errores = new ArrayList<String>();
-	
+	Stack<Registro_Semantico> pilaSemantica = new Stack<Registro_Semantico>();
+        
 	public static Semantico _Instancia;
 	
 	public static Semantico getInstance(){   // singleton xD
@@ -107,4 +109,12 @@ public class Semantico {
     		}
     	}
     }
+    
+    public void guardarOperador(String token){
+        RS_Operador rso = new RS_Operador();
+        rso.setValor(token);
+        pilaSemantica.push(rso);
+    }
+    
+    
 }

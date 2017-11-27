@@ -7,16 +7,18 @@ import java.util.LinkedList;
 import analizador_Semantico.Semantico;
 import analizador_Semantico.Simbolo;
 import analizador_Semantico.Identificador;
+import java.util.Stack;
 import java.util.ArrayList;
 
 //------> Codigo para el parser,variables, metodos
 parser code
 {:
     public String resultado="";
-    String tipo = "";
-    String tipoB = "";
+    String tipo = "";  //aun necesario
+    String tipoB = ""; //no encuentro utilidad
     String valorV = "";
     ArrayList<String> valoresDecMul = new ArrayList<String>();
+    Stack<String> pilaTipo = new Stack<String>();
 
 
     //Metodo al que se llama automaticamente ante algun error sintactico
@@ -66,9 +68,9 @@ parser code
     	if(valoresDecMul.size() > 0){
     		valAux = valoresDecMul.get(0);
     	}
-    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valAux);
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valAux);
     	semantico.addSimbolo(nSim);
-        tipo = "";
+        //tipo = "";
         valorV = "";
         /*
         if(valoresDecMul.size() > 0){
@@ -85,15 +87,29 @@ parser code
     }
     
     private void crear_Global(String id){
-    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valoresDecMul.get(valoresDecMul.size()-1));
+    	Simbolo nSim;
+        String tipoTemp = pilaTipo.pop();
+        pilaTipo.push(tipoTemp);
+        pilaTipo.push(tipoTemp);
+        
+        if(!valoresDecMul.isEmpty()){
+
+            nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.get(valoresDecMul.size()-1));
+        }
+
+        else{
+            nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, "");
+        }
     	semantico.addSimbolo(nSim);
     	valorV = "";
-    	valoresDecMul.remove(valoresDecMul.size()-1);
+    	if(!valoresDecMul.isEmpty()){
+            valoresDecMul.remove(valoresDecMul.size()-1);
+        }
     }
 
     private void crear_Funcion(String id){
-    	Simbolo nSim = new Simbolo(tipo, Identificador.Funcion, id, "");
-        tipo = "";
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Funcion, id, "");
+        //tipo = "";
     	semantico.addSimbolo(nSim);
     	
     	tablaTemp = semantico.verificarLocales(tablaTemp);
@@ -105,14 +121,17 @@ parser code
     }
     
     private void crear_Local_ydel(String id){
-	   	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valorV);
-        tipo = "";
+	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valorV);
+        //tipo = "";
         valorV = "";
     	tablaTemp.add(nSim);
     }
 
     private void crear_Local(String id){
-    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id, valorV);
+        String tipoTemp = pilaTipo.pop();
+        pilaTipo.push(tipoTemp);
+        pilaTipo.push(tipoTemp);
+    	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valorV);
     	valorV = "";
     	tablaTemp.add(nSim);
     }
@@ -122,6 +141,10 @@ parser code
             System.out.println(s.getId() +" " + s.getNombre() +" " + s.getTipo());
         }   
     }
+
+
+
+
     
 :}
 
@@ -223,7 +246,7 @@ INI_A::= Identificador:id DECLARS_BAS1  {:crear_Global(id.toString());:}
 TIPO_GLOBAL::= NCONST
               |TIPO;
 
-DECLARS_BAS1::= coma INI_A// {:valoresDecMul.add(valorV);	valorV = "";:}
+DECLARS_BAS1::= coma INI_A
                |ASIG_EB DECLARS_BAS1
                |ASIG_EB;
 
@@ -232,7 +255,7 @@ ASIG_EB::= igual EXP_BAS {:	valoresDecMul.add(valorV); valorV = "";:};
 EXP_BAS::= para EXP_BAS parc {:valorV = "(" + valorV + ")";:}
            |EXP_BAS ARIT1 EXP_BAS
            |menos:v EXP {:valorV = v.toString() + valorV;:}
-           |mas EXP //Aqui se deja igual porque un más (+) no cambia el valor
+           |mas EXP //Aqui se deja igual porque un mï¿½s (+) no cambia el valor
            |NOT_REP EXP
            |num:v {:valorV = valorV + v.toString();:}
            |txt:v {:valorV = valorV + v.toString();:};
@@ -495,13 +518,13 @@ NCONST::= CONST_REP TIPO
 CONST_REP::= rconst:t CONST_REP {:tipo+= t.toString()+" ";:}
             |rconst:t {:tipo+= t.toString()+" ";:};
 
-TIPO::= rint:t {:tipo+= t.toString();:}
-       |rchar:t {:tipo+= t.toString();:}
-       |rlong:t {:tipo+= t.toString();:}
-       |TIPO_MODI rint:t {:tipo+= t.toString();:}
-       |rint:t TIPO_MODI {:tipo+= t.toString();:}
-       |rlong:t rlong:tt {:tipo+= t.toString() +" "+ tt.toString();:}
-       |rshort:t {:tipo+= t.toString();:};
+TIPO::= rint:t {:tipo+= t.toString(); pilaTipo.push(tipo); tipo = "";:}
+       |rchar:t {:tipo+= t.toString();pilaTipo.push(tipo);tipo = "";:}
+       |rlong:t {:tipo+= t.toString();pilaTipo.push(tipo);tipo = "";:}
+       |TIPO_MODI rint:t {:tipo+= t.toString();pilaTipo.push(tipo);tipo = "";:}
+      // |rint:t TIPO_MODI {:tipo+= t.toString();:}   //DA PROBLEMAS AL GENERAR LA TABLA DE SIMBOLOS
+       |rlong:t rlong:tt {:tipo+= t.toString() +" "+ tt.toString();pilaTipo.push(tipo);tipo = "";:}
+       |rshort:t {:tipo+= t.toString();pilaTipo.push(tipo);tipo = "";:};
 
 TIPO_MODI::= rlong:t {:tipo+= t.toString()+" ";:}
             |rlong:t rlong:tt {:tipo+= t.toString() +" "+ tt.toString()+" ";:}

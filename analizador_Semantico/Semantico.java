@@ -116,6 +116,27 @@ public class Semantico {
         pilaSemantica.push(rso);
     }
     
+    public void evaluadorBinario(){
+    	RS_DO rsdo1 = (RS_DO) pilaSemantica.pop();
+    	RS_Operador rsop = (RS_Operador) pilaSemantica.pop();
+    	RS_DO rsdo2 = (RS_DO) pilaSemantica.pop();
+    	
+    	//Chequeo de tipos
+    	if(rsdo1.getTipo() == rsdo2.getTipo()){
+    		//Generar codigo completo
+    		//Crear RS_DO
+    		RS_DO rsdo = new RS_DO();
+    		rsdo.setTipo(RS_tipo.direccion);
+    		rsdo.setValor(rsdo1.getValor());
+    		pilaSemantica.push(rsdo);
+    	}else{
+    		System.out.println("Error. Asignacion de tipos distintos. Linea: HAY QUE PONER LINEA");
+    		//Hacer el push a la pila...:
+    		//errores.push("Error. Asignacion de tipos distintos. Linea: HAY QUE PONER LINEA");
+    	}
+    }
+}
+
     public void guardarId(String token){
         RS_DO rsdo = new RS_DO();
         rsdo.setTipo(RS_tipo.direccion);

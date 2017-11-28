@@ -1,0 +1,461 @@
+/*--------------- 1ra Area: Codigo de Usuario -----------------------*/
+//-------> importaciones, paquetes
+
+package analizador_Sintactico;
+import java_cup.runtime.Symbol;
+import java.util.LinkedList;
+import analizador_Semantico.Semantico;
+import analizador_Semantico.Simbolo;
+import analizador_Semantico.Identificador;
+
+//------> Codigo para el parser,variables, metodos
+parser code
+{:
+    public String resultado="";
+    //public static LinkedList<TError> TablaES = new LinkedList<TError>(); 
+
+    //Metodo al que se llama automaticamente ante algun error sintactico
+    public void syntax_error(Symbol s)
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+
+        //System.out.println("Error Sintactico Recuperado");
+        //System.out.println("\t\tLexema: "+lexema);
+        //System.out.println("\t\tFila: "+fila);
+        //System.out.println("\t\tColumna: "+columna);
+
+        //TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        //TablaES.add(datos);
+       
+        
+    }
+
+    //Metodo al que se llama en el momento en que ya no es posible una recuperacion de errores
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        
+        resultado+= "\n\t¡ Error Sintactico IRRECUPERABLE !";
+        System.out.println("¡ Error Sintactico IRRECUPERABLE !");
+        resultado+= "\n\t\t\tLexema: "+lexema;
+        System.out.println("\t\tLexema: "+lexema);
+        resultado+= "\n\t\t\tLinea: "+fila;
+        System.out.println("\t\tLinea: "+fila);
+        //System.out.println("\t\tColumna: "+columna);
+
+        //TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        //TablaES.add(datos);
+     
+    }
+    
+    
+    //Método prueba para pasar cosas a otra clase
+    public Semantico semantico = new Semantico();
+    public String tipo = "";
+    
+    private void crear_Global(String id){
+    	Simbolo nSim = new Simbolo(tipo, Identificador.Variable, id);
+    	semantico.addSimbolo(nSim);
+    }
+:}
+
+//------> Codigo para las acciones gramaticales
+action code
+{:
+:}
+
+/*--------------- 2da Area: Declaraciones -----------------------*/
+//------> declaracion de terminales 
+
+terminal Operador, Palabra_reservada, num, txt, Identificador,masmas,menosmenos;
+terminal igual,mas,menos,por,div,mod,para,parc,masigual,menosigual,porigual;
+terminal divigual,igualigual,mayque,may,menque,men,dif,or,and,not;
+terminal rbreak, rcase, rchar, rconst, rcontinue, rdefault, rdo, relse, rfor;
+terminal rif, rint, rlong, rreturn, rshort, rswitch, rvoid, rwhile;
+terminal coma, puntoycoma, punto, dospuntos, corcha, corchc, rread, rwrite, eof;
+
+//------>terminales no sados
+// relse, Operador, Palabra_reservada, punto, rdo
+//------> declaracion de no terminales
+non terminal Symbol INICIO, INI, INI_A, INI2, TIPO_GLOBAL, DECLARS_BAS1;
+non terminal Symbol ASIG_EB, EXP_BAS, FUNCIONES, FUNCIONES2, PARAMS2, CUERPO_FUNCION;
+non terminal Symbol DECLAR, DECLAR1, DECLAR2, DECLAR3, CUERPO, OPS_CUERPO, EXPRESION;
+non terminal Symbol EST_CONTROL, NIF, IF_ESTRUC, NELSE, ELSE_ESTRUC, NFOR, FOR_ESTRUC;
+non terminal Symbol CUERPO_CICLO, NWHILE, DO_WHILE, NSWITCH, CUERPO_SW;
+non terminal Symbol NCASE, CUERPO_OP, CASE_ESTRUC, CASE_ESTRUC2, CASE_CUERPO_INT;
+non terminal Symbol CASE_CLAU, DEFAULT_ESTRUC, DEFAULT_CLAU, CONT_BREAK_OP;
+non terminal Symbol BREAK_OP, BREAK, NCONTINUE, COND_EXPS, INSTRUCCIONES, READ, WRITE, ASIGNACION;
+non terminal Symbol ASIGNACION1, ASIGNACION2, RETORNO, RETORNO1, EXP_ASIG, EXP;
+non terminal Symbol EXP_COM, EXP_COM2, VALS, OPERS, ARIT1, ARIT_ASIG, ARIT_ASIG2;
+non terminal Symbol BOOLS, NCONST, TIPO, TERM, DECLAR00, GLOBAL, FUNCS, GLOBAL_FACT;
+non terminal Symbol TIPO_MODI, FUNCS_FACT, PT, CONST_REP, NOT_REP, WHILE_DO, OPS_CUERPO_SW;
+non terminal Symbol COND_EXPS_SW, EXP_SW, EXPRESION_SW, EXP_COM_SW, EXP_COM2_SW, FOR_EXPR, WRITE_PARAMS;
+
+
+//non terminal String ERROR;
+
+
+
+
+//----> precedencia de menor a mayor 
+
+
+
+precedence left  num,txt,Identificador;
+precedence left masmas,menosmenos,igual,masigual,menosigual,porigual, divigual;
+precedence left igualigual,mayque,may,menque,men,dif,or,and,not;
+precedence left mas, menos;
+precedence left por, div,mod;
+precedence left rbreak, rcase, rchar, rconst, rcontinue, rdefault, rdo, relse, rfor, rif, rint, rlong, rreturn, rshort, rswitch, rvoid, rwhile, rwrite, rread;
+precedence left para;
+precedence left corcha;
+precedence left corchc;
+precedence left parc;
+
+precedence left puntoycoma;
+
+precedence left coma;
+
+start with INICIO;
+
+/*--------------- 3ra Area: Reglas-----------------------*/
+INICIO::= INI
+		 |FUNCS;
+
+INI::= PT GLOBAL
+      |GLOBAL;
+      
+GLOBAL::=  GLOBAL_FACT GLOBAL
+          |GLOBAL_FACT FUNCS
+          |error:s GLOBAL:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+          |error:s FUNCS:z {:resultado+= "\n\tError, falta punto y coma. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};//{:System.out.println("\tError, falta punto y coma. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
+          
+GLOBAL_FACT::= INI_A PT
+			   |TIPO_GLOBAL Identificador DECLARS_BAS1 PT
+			   |TIPO_GLOBAL Identificador:i PT {:crear_Global(i.toString());:}
+               |TIPO_GLOBAL PT
+               |error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1);:}	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1));:}
+               |TIPO_GLOBAL error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
+
+PT::= puntoycoma PT
+     |puntoycoma;
+
+FUNCS::= FUNCS_FACT PT FUNCS
+         |FUNCS_FACT FUNCS
+         |FUNCS_FACT PT
+         |FUNCS_FACT;
+         
+FUNCS_FACT::= TIPO_GLOBAL Identificador para FUNCIONES
+              |Identificador para FUNCIONES
+              |rvoid Identificador para FUNCIONES
+              |error:s FUNCIONES2:z {:resultado+= "\n\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+              
+   
+INI_A::= Identificador DECLARS_BAS1
+         |Identificador
+         |error:s DECLARS_BAS1:z {:resultado+= "\n\tError, se esperaba un identificador. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError, se esperaba un identificador. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+TIPO_GLOBAL::= NCONST
+              |TIPO;
+
+DECLARS_BAS1::= coma INI_A
+               |ASIG_EB DECLARS_BAS1
+               |ASIG_EB;
+
+ASIG_EB::= igual EXP_BAS;
+
+EXP_BAS::= para EXP_BAS parc
+           |EXP_BAS ARIT1 EXP_BAS
+           |menos EXP
+           |mas EXP
+           |NOT_REP EXP
+           |num
+           |txt;
+
+FUNCIONES::= PARAMS2 parc FUNCIONES2
+			|parc FUNCIONES2
+			|error:s FUNCIONES2:z {:resultado+= "\n\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al definir una funcion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+FUNCIONES2::= corcha CUERPO_FUNCION corchc
+             |corcha PT CUERPO_FUNCION corchc
+             |corcha CUERPO_FUNCION PT corchc
+             |corcha PT CUERPO_FUNCION PT corchc
+             |corcha error:s corchc:z {:resultado+= "\n\tError. La funcion debe tener cuerpo. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError. La funcion debe tener cuerpo. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+             |error:s corchc:z {:resultado+= "\n\tError. Falta llave que abre. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError. Falta llave que abre. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+PARAMS2::= TIPO Identificador coma PARAMS2
+          |TIPO Identificador
+          |TIPO Identificador error:s PARAMS2:z {:resultado+= "\n\tError, se esperaba ','. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError, se esperaba ','. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+CUERPO_FUNCION::= DECLAR CUERPO
+                  |CUERPO
+                  |DECLAR:s {:resultado+= "\n\tError. La funcion debe tener cuerpo. Linea: " + (sright+1);:};	//{:System.out.println("\tError. La funcion debe tener cuerpo. Linea: " + (sright+1));:};
+
+DECLAR::= NCONST DECLAR1 DECLAR00
+         |TIPO DECLAR1  DECLAR00
+         |TIPO DECLAR00
+         |NCONST DECLAR00
+         |NCONST error:s DECLAR00:z {:resultado+= "\n\tError en la declaracion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en la declaracion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+         |TIPO error:s DECLAR00:z {:resultado+= "\n\tError en la declaracion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en la declaracion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+DECLAR00::= puntoycoma DECLAR
+           |puntoycoma;
+
+DECLAR1::= Identificador 
+          |Identificador DECLAR2;
+
+DECLAR2::= igual EXP DECLAR3
+          |DECLAR3
+          |igual EXP;
+
+DECLAR3::= coma DECLAR1;
+
+CUERPO::= OPS_CUERPO CUERPO
+         |OPS_CUERPO;
+
+OPS_CUERPO::= EXPRESION puntoycoma
+             |DO_WHILE puntoycoma
+             |EST_CONTROL
+             |INSTRUCCIONES// puntoycoma
+             |RETORNO puntoycoma
+             |error:s puntoycoma:z {:resultado+= "\n\tError en una expresion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en una expresion. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+EXPRESION::= ASIGNACION
+            |EXP;
+
+EST_CONTROL::= NIF
+              |NFOR
+              |NWHILE
+              |NSWITCH;
+
+NIF::= IF_ESTRUC NELSE
+	  |IF_ESTRUC;
+
+IF_ESTRUC::= rif para COND_EXPS OPS_CUERPO
+            |rif para COND_EXPS corcha CUERPO corchc
+            |rif para COND_EXPS corcha corchc
+            |rif para error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'if'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en la estructura de control 'if'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+            |rif error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'if'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en la estructura de control 'if'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+            
+NELSE::= relse ELSE_ESTRUC;
+
+ELSE_ESTRUC::= OPS_CUERPO
+	      |corcha CUERPO corchc;
+
+NFOR::= rfor  FOR_ESTRUC  OPS_CUERPO
+       |rfor  FOR_ESTRUC  corcha CUERPO_CICLO corchc
+       |rfor  FOR_ESTRUC  corcha corchc
+       |rfor error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'for'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en la estructura de control 'for'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+FOR_ESTRUC::= para FOR_EXPR puntoycoma EXPRESION puntoycoma EXPRESION parc
+			 |para FOR_EXPR puntoycoma puntoycoma parc
+			 |para FOR_EXPR puntoycoma EXPRESION puntoycoma parc
+			 |para FOR_EXPR puntoycoma puntoycoma EXPRESION parc
+			 |para puntoycoma EXPRESION puntoycoma EXPRESION parc
+			 |para puntoycoma EXPRESION puntoycoma parc
+			 |para puntoycoma puntoycoma EXPRESION parc
+			 |para puntoycoma puntoycoma parc
+			 |para error:s corcha:z {:resultado+= "\n\tError en parametros la estructura de control 'for'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en parametros la estructura de control 'for'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+FOR_EXPR::= EXPRESION
+           |TIPO Identificador igual EXP;
+
+CUERPO_CICLO::= OPS_CUERPO CUERPO_CICLO
+               |CONT_BREAK_OP puntoycoma CUERPO_CICLO
+		       |OPS_CUERPO
+		       |CONT_BREAK_OP puntoycoma;
+
+NWHILE::= rwhile para COND_EXPS  OPS_CUERPO
+         |rwhile para COND_EXPS  corcha CUERPO_CICLO corchc
+         |rwhile para COND_EXPS  corcha corchc
+         |rwhile para error:s corchc:z {:resultado+= "\n\tError en parametros de la estructura de control 'while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en parametros de la estructura de control 'while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+         |rwhile error:s corchc:z {:resultado+= "\n\tError en parametros de la estructura de control 'while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en parametros de la estructura de control 'while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+DO_WHILE::= rdo corcha CUERPO_CICLO corchc rwhile para COND_EXPS
+            |rdo corcha corchc rwhile para COND_EXPS
+            |rdo corcha error:s corchc:z rwhile para COND_EXPS {:resultado+= "\n\tError en la estructura de control 'do-while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en la estructura de control 'do-while'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+
+NSWITCH::= rswitch para COND_EXPS_SW corcha CASE_ESTRUC corchc
+           |rswitch para COND_EXPS_SW corcha DEFAULT_CLAU CASE_ESTRUC corchc
+           |rswitch para COND_EXPS_SW corcha CASE_ESTRUC DEFAULT_CLAU corchc
+           |rswitch para COND_EXPS_SW corcha CASE_ESTRUC DEFAULT_CLAU CASE_ESTRUC corchc
+           |rswitch para COND_EXPS_SW corcha DEFAULT_CLAU corchc
+           |rswitch para COND_EXPS_SW corcha corchc
+           |rswitch error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha error:s corchc:z {:resultado+= "\n\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError en la estructura de control 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha error DEFAULT_CLAU:s corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha error DEFAULT_CLAU:s CASE_ESTRUC corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha error CASE_ESTRUC DEFAULT_CLAU:s corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha CASE_ESTRUC error CASE_ESTRUC DEFAULT_CLAU:s corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha CASE_ESTRUC error DEFAULT_CLAU:s corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:}	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:}
+           |rswitch para COND_EXPS_SW corcha CASE_ESTRUC error DEFAULT_CLAU:s CASE_ESTRUC corchc:z {:resultado+= "\n\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError, multiples etiqueta 'default' en la estructura 'switch'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+COND_EXPS_SW::= EXPRESION_SW OPERS COND_EXPS_SW parc
+            |EXPRESION_SW parc
+            |error:s parc:z {:resultado+= "\n\tError. Los parametros del switch deben ser numericos. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError. Los parametros del switch deben ser numericos. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+EXPRESION_SW::= ASIGNACION
+            |EXP_SW;
+            
+EXP_SW::= Identificador para VALS parc
+       |Identificador para parc
+       |EXP_COM_SW;
+
+EXP_COM_SW::= EXP_COM2_SW OPERS EXP_COM_SW//TERM OPERS EXP_COM
+          |menos EXP_SW
+          |mas EXP_SW
+          |NOT_REP EXP_SW
+          |EXP_COM2_SW;
+
+EXP_COM2_SW::= para EXP_SW parc
+		   |num
+		   |Identificador;
+
+CASE_ESTRUC::= OPS_CUERPO_SW CASE_ESTRUC
+              |CASE_ESTRUC2
+              |OPS_CUERPO_SW;
+
+CUERPO_SW::= OPS_CUERPO_SW CUERPO_SW
+            |OPS_CUERPO_SW;
+            
+OPS_CUERPO_SW::= EXPRESION puntoycoma
+                |DO_WHILE puntoycoma
+                |EST_CONTROL
+                |INSTRUCCIONES puntoycoma
+                |CONT_BREAK_OP puntoycoma
+                |RETORNO puntoycoma;
+             
+CASE_ESTRUC2::= CASE_CLAU CASE_ESTRUC
+               |CASE_CLAU;
+      
+CASE_CUERPO_INT::= OPS_CUERPO_SW CASE_CUERPO_INT
+                  |OPS_CUERPO_SW;
+
+CASE_CLAU::= rcase num dospuntos CUERPO_SW
+            |rcase num dospuntos CASE_CLAU
+            |rcase num dospuntos puntoycoma;
+
+DEFAULT_CLAU::= rdefault dospuntos CUERPO_SW
+               |rdefault dospuntos CASE_CLAU
+               |rdefault dospuntos puntoycoma;
+
+CONT_BREAK_OP::= NCONTINUE
+                |BREAK;
+
+BREAK::= rbreak;
+
+NCONTINUE::= rcontinue;
+
+COND_EXPS::= EXPRESION OPERS COND_EXPS parc
+            |EXPRESION parc
+            |error:s parc:z {:resultado+= "\n\tError en los parametros de la extructura de control. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError en los parametros de la extructura de control. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1));:};
+
+INSTRUCCIONES::= READ
+                |WRITE;
+
+READ::= rread para parc puntoycoma
+       |rread para Identificador parc puntoycoma
+       |rread error:s puntoycoma:z {:resultado+= "\n\tError en la instruccion 'read'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};
+
+WRITE::= rwrite para WRITE_PARAMS parc puntoycoma
+        |rwrite error:s puntoycoma:z {:resultado+= "\n\tError en la instruccion 'write'. Linea: " + (sright+1) + ". Recuperado en: " + (zright+1);:};
+		//|rwrite para Identificador ARIT_ASIG2 parc;
+
+WRITE_PARAMS::= EXP coma WRITE_PARAMS
+               |Identificador ARIT_ASIG2 coma WRITE_PARAMS
+               |Identificador igual EXP coma WRITE_PARAMS
+               |EXP
+               |Identificador ARIT_ASIG2
+               |Identificador igual EXP;
+
+ASIGNACION::= Identificador ASIGNACION1 ASIGNACION2
+			 |Identificador ASIGNACION1;
+
+ASIGNACION1::= EXP_ASIG
+           	  |ARIT_ASIG2
+           	  |ARIT_ASIG ASIGNACION;
+
+ASIGNACION2::= coma ASIGNACION;
+
+RETORNO::= rreturn RETORNO1
+		  |rreturn;
+
+RETORNO1::= EXPRESION
+           |coma EXPRESION RETORNO1;
+
+EXP_ASIG::= ARIT_ASIG EXP;
+
+EXP::= Identificador para VALS parc
+       |Identificador para parc
+       |EXP_COM;
+
+EXP_COM::= EXP_COM2 OPERS EXP_COM
+          |menos EXP
+          |mas EXP
+          |NOT_REP EXP
+          |EXP_COM2;
+
+NOT_REP::= not NOT_REP
+		  |not;
+
+EXP_COM2::= para EXP parc
+		   |TERM;
+
+VALS::= EXP coma VALS
+       |EXP;
+
+OPERS::= ARIT1
+        |BOOLS;
+
+ARIT1::= mas
+        |menos
+        |por
+        |div
+        |mod;
+
+ARIT_ASIG::= igual
+            |masigual
+            |menosigual
+            |porigual
+            |divigual;
+            
+ARIT_ASIG2::= masmas
+             |menosmenos;
+
+BOOLS::= igualigual
+        |mayque
+        |may
+        |menque
+        |men
+        |dif
+        |or
+        |and;
+
+NCONST::= CONST_REP TIPO
+         |TIPO CONST_REP
+         |CONST_REP;
+
+CONST_REP::= rconst:t {:tipo+= t.toString() + " ";:} CONST_REP
+            |rconst:t {:tipo+= t.toString() + " ";:};
+
+TIPO::= rint:t {:tipo+= t.toString() + " ";:}
+       |rchar:t {:tipo+= t.toString() + " ";:}
+       |rlong:t {:tipo+= t.toString() + " ";:}
+       |TIPO_MODI rint:t {:tipo+= t.toString() + " ";:}
+       |rint:t {:tipo+= t.toString() + " ";:} TIPO_MODI
+       |rlong rlong:t {:tipo+= t.toString() + " " + t.toString() + " ";:}
+       |rshort:t {:tipo+= t.toString() + " ";:};
+
+TIPO_MODI::= rlong:t {:tipo+= t.toString() + " ";:}
+            |rlong rlong:t {:tipo+= t.toString() + " " + t.toString() + " ";:}
+            |rshort:t {:tipo+= t.toString() + " ";:};
+
+TERM::= num
+       |txt
+       |Identificador;

@@ -156,6 +156,89 @@ parser code
         valorV = "";
     	tablaTemp.add(nSim);
     	lineaTemp.add(linea);
+
+
+
+        semantico.guardarId(id);
+        if (!pilaValor.isEmpty()){
+            Registro_Semantico temp;
+            temp = pilaValor.pop();
+            if(temp.getValor().equals("=")){
+                semantico.agregar_a_pilaSemantica(temp);
+                temp = pilaValor.pop();
+
+
+
+                if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable o funcion " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                 }
+
+
+                semantico.agregar_a_pilaSemantica(temp);
+                while(!pilaValor.isEmpty()){
+                    temp = pilaValor.pop();
+
+
+
+
+                    if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable o funcion " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                    }
+
+
+
+
+
+                    if(!temp.getValor().equals("=")){
+                        semantico.agregar_a_pilaSemantica(temp);
+                    }
+                    else{
+                        pilaValor.push(temp);
+                        break;
+                    }
+                }
+            }
+        }
+
+
     }
 
     private void crear_Local(String id, int linea){
@@ -166,6 +249,81 @@ parser code
     	valorV = "";
     	tablaTemp.add(nSim);
     	lineaTemp.add(linea);
+
+
+
+        semantico.guardarId(id);
+        if (!pilaValor.isEmpty()){
+            Registro_Semantico temp;
+            temp = pilaValor.pop();
+            if(temp.getValor().equals("=")){
+                semantico.agregar_a_pilaSemantica(temp);
+                temp = pilaValor.pop();
+
+                if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable o funcion " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                 }
+                
+                semantico.agregar_a_pilaSemantica(temp);
+                while(!pilaValor.isEmpty()){
+                    temp = pilaValor.pop();
+
+
+
+                    if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable o funcion " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                    }
+                
+
+
+                    if(!temp.getValor().equals("=")){
+                        semantico.agregar_a_pilaSemantica(temp);
+                    }
+                    else{
+                        pilaValor.push(temp);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public static void print_tablaTemp(){
@@ -231,7 +389,7 @@ non terminal Symbol ASIGNACION1, ASIGNACION2, RETORNO, RETORNO1, EXP_ASIG, EXP;
 non terminal Symbol EXP_COM, EXP_COM2, VALS, OPERS, ARIT1, ARIT_ASIG, ARIT_ASIG2;
 non terminal Symbol BOOLS, NCONST, TIPO, TERM, DECLAR00, GLOBAL, FUNCS, GLOBAL_FACT;
 non terminal Symbol TIPO_MODI, FUNCS_FACT, PT, CONST_REP, NOT_REP, WHILE_DO, OPS_CUERPO_SW;
-non terminal Symbol COND_EXPS_SW, EXP_SW, EXPRESION_SW, EXP_COM_SW, EXP_COM2_SW, FOR_EXPR;
+non terminal Symbol COND_EXPS_SW, EXP_SW, EXPRESION_SW, EXP_COM_SW, EXP_COM2_SW, FOR_EXPR, COMAA, PARCC;
 
 
 //non terminal String ERROR;
@@ -248,13 +406,13 @@ precedence left coma;
 precedence left num,txt,Identificador;
 precedence left masmas,menosmenos,igual,masigual,menosigual,porigual, divigual;
 precedence left igualigual,mayque,may,menque,men,dif,or,and,not;
-precedence left mas, menos;
-precedence left por, div,mod;
 precedence left rbreak, rcase, rchar, rconst, rcontinue, rdefault, rdo, relse, rfor, rif, rint, rlong, rreturn, rshort, rswitch, rvoid, rwhile, rwrite, rread;
 precedence left para;
 precedence left corcha;
 precedence left corchc;
 precedence left parc;
+precedence left mas, menos;
+precedence left por, div,mod;
 
 start with INICIO;
 
@@ -521,24 +679,31 @@ RETORNO1::= EXPRESION
 
 EXP_ASIG::= ARIT_ASIG EXP;
 
-EXP::= Identificador:i para VALS parc {:valorV = i.toString() + "(" + valorV + ")";        guardarId(i.toString());:}
-       |Identificador:i para parc {:valorV = i.toString() + "()";                          guardarId(i.toString());:} 
+EXP::= Identificador:i  para:a VALS PARCC OPERS EXP{:   guardarOperador(a.toString());guardarId(i.toString()); :}
+       |Identificador:i para:a PARCC OPERS EXP     {:   guardarOperador(a.toString());guardarId(i.toString()); :} 
+       |Identificador:i para:a VALS PARCC          {:   guardarOperador(a.toString());guardarId(i.toString()); :}
+       |Identificador:i para:a PARCC               {:   guardarOperador(a.toString());guardarId(i.toString()); :} 
        |EXP_COM;
 
-EXP_COM::= EXP_COM2 OPERS EXP_COM
+PARCC::= parc {: guardarOperador(")"); :};
+
+
+EXP_COM::= EXP_COM2 OPERS EXP
           |menos EXP {:valorV = "-" + valorV;:}
           |mas EXP
           |NOT_REP EXP
           |EXP_COM2;
 
-NOT_REP::= not:v NOT_REP {:valorV = v.toString() + valorV;:}
-		  |not:v {:valorV = v.toString() + valorV;:};
+NOT_REP::= not:v NOT_REP {:valorV += v.toString() + valorV;:}
+		  |not:v {:valorV += v.toString() + valorV;:};
 
-EXP_COM2::= para EXP parc {:valorV = "(" + valorV + ")";:}
+EXP_COM2::= para EXP parc {:valorV += "(" + valorV + ")";:}
 		   |TERM;
 
-VALS::= EXP coma VALS {:valorV = "," + valorV;:}
+VALS::= EXP COMAA VALS {:valorV += "," + valorV;:}
        |EXP;
+
+COMAA ::= coma{:guardarOperador(",");:};
 
 OPERS::= ARIT1
         |BOOLS;
@@ -587,7 +752,7 @@ TIPO_MODI::= rlong:t {:tipo+= t.toString()+" ";:}
             |rshort:t {:tipo+= t.toString()+" ";:};
 
 
-TERM::= num:n {:valorV = n.toString();             guardarLiteral(n.toString());:}
-       |txt:t {:valorV = t.toString();             guardarLiteral(t.toString());:}
-       |Identificador:i {:valorV = i.toString();   guardarLiteral(i.toString());:};
+TERM::= num:n {:valorV += n.toString();             guardarLiteral(n.toString());:}
+       |txt:t {:valorV += t.toString();             guardarLiteral(t.toString());:}
+       |Identificador:i {:valorV += i.toString();   guardarId(i.toString());:};
 

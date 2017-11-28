@@ -178,4 +178,24 @@ public class Semantico {
     public void tradDeclaracion(){
     	//if(pilaSemantica.size() > )
     }
+    
+    public boolean estaDefinidoGlobales(String id){
+        for (Simbolo s : tablaG){
+            if(s.getNombre().equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void addError(String error){
+        errores.add(error);
+    }
+    
+    public void printErrores(){
+        System.out.println("\n\n LISTA DE ERRORES: ");
+        for(String s : errores){
+            System.out.println("\t" + s);
+        }
+    }
 }

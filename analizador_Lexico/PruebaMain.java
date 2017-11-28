@@ -51,5 +51,6 @@ public class PruebaMain {
         Semantico.getInstance().printTablaSimbolos();
         System.out.println("\n\n\n");
         Semantico.getInstance().printPilaSemantica();
+        Semantico.getInstance().printErrores();
     } 
 }

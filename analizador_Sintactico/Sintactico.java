@@ -1250,6 +1250,7 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     private Semantico semantico = Semantico.getInstance();
     private static ArrayList<Simbolo> tablaTemp = new ArrayList<Simbolo>();
     private static ArrayList<Integer> lineaTemp = new ArrayList<Integer>();
+    ArrayList<String> linea = new ArrayList<String>();
     String tipo = "";  //aun necesario
     String tipoB = ""; //no encuentro utilidad
     String valorV = "";
@@ -1306,8 +1307,8 @@ public class Sintactico extends java_cup.runtime.lr_parser {
         valorV = "";
         
 
+        semantico.guardarId(id);
         if (!pilaValor.isEmpty()){
-            semantico.guardarId(id);
             Registro_Semantico temp;
             temp = pilaValor.pop();
             if(temp.getValor().equals("=")){
@@ -1326,6 +1327,7 @@ public class Sintactico extends java_cup.runtime.lr_parser {
                 }
             } 
         }
+        semantico.tradDeclaracion();
     }
     
     private void crear_Global(String id, int linea){
@@ -1336,11 +1338,13 @@ public class Sintactico extends java_cup.runtime.lr_parser {
         
         nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
        
-    	semantico.addSimbolo(nSim, linea);
+    	//semantico.addSimbolo(nSim, linea);
+    	//semantico.tipo(nSim);
     	valorV = "";
 
+
+        semantico.guardarId(id);
         if (!pilaValor.isEmpty()){
-            semantico.guardarId(id);
             Registro_Semantico temp;
             temp = pilaValor.pop();
             if(temp.getValor().equals("=")){
@@ -1357,8 +1361,9 @@ public class Sintactico extends java_cup.runtime.lr_parser {
                         break;
                     }
                 }
-            } 
-        } 
+            }
+        }
+        semantico.tradDeclaracion();
     }
 
     private void crear_Funcion(String id, int linea){
@@ -2226,8 +2231,7 @@ class CUP$Sintactico$actions {
           case 70: // DECLAR2 ::= DECLAR3 
             {
               Symbol RESULT =null;
-
-		valoresDecMul.push("");	valorV = "";
+		valoresDecMul.push(""); valorV = "";
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("DECLAR2",14, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;

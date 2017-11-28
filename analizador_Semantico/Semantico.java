@@ -135,7 +135,6 @@ public class Semantico {
     		//errores.push("Error. Asignacion de tipos distintos. Linea: HAY QUE PONER LINEA");
     	}
     }
-}
 
     public void guardarId(String token){
         RS_DO rsdo = new RS_DO();

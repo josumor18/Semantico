@@ -98,7 +98,7 @@ parser code
                 }
             } 
         }
-        semantico.tradDeclaracion();
+        semantico.tradDeclaracionGlobal(linea);
     }
     
     private void crear_Global(String id, int linea){
@@ -109,7 +109,7 @@ parser code
         
         nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
        
-    	//semantico.addSimbolo(nSim, linea);
+    	semantico.addSimbolo(nSim, linea);
     	//semantico.tipo(nSim);
     	valorV = "";
 
@@ -134,7 +134,7 @@ parser code
                 }
             }
         }
-        semantico.tradDeclaracion();
+        semantico.tradDeclaracionGlobal(linea);
     }
 
     private void crear_Funcion(String id, int linea){
@@ -521,11 +521,16 @@ RETORNO1::= EXPRESION
 
 EXP_ASIG::= ARIT_ASIG EXP;
 
-EXP::= Identificador:i para VALS parc {:valorV = i.toString() + "(" + valorV + ")";        guardarId(i.toString());:}
+/*EXP::= Identificador:i para VALS parc {:valorV = i.toString() + "(" + valorV + ")";        guardarId(i.toString());:}
        |Identificador:i para parc {:valorV = i.toString() + "()";                          guardarId(i.toString());:} 
+       |EXP_COM;*/
+EXP::= Identificador:i para VALS parc OPERS EXP{:valorV += i.toString() + "(" + valorV + ")";            guardarId(i.toString());:}
+       |Identificador:i para parc OPERS EXP     {:valorV += i.toString() + "()";                          guardarId(i.toString());:} 
+       |Identificador:i para VALS parc           {:valorV += i.toString() + "(" + valorV + ")";            guardarId(i.toString());:}
+       |Identificador:i para parc               {:valorV += i.toString() + "()";                          guardarId(i.toString());:} 
        |EXP_COM;
-
-EXP_COM::= EXP_COM2 OPERS EXP_COM
+       
+EXP_COM::= EXP_COM2 OPERS EXP
           |menos EXP {:valorV = "-" + valorV;:}
           |mas EXP
           |NOT_REP EXP
@@ -587,7 +592,7 @@ TIPO_MODI::= rlong:t {:tipo+= t.toString()+" ";:}
             |rshort:t {:tipo+= t.toString()+" ";:};
 
 
-TERM::= num:n {:valorV = n.toString();             guardarLiteral(n.toString());:}
-       |txt:t {:valorV = t.toString();             guardarLiteral(t.toString());:}
-       |Identificador:i {:valorV = i.toString();   guardarLiteral(i.toString());:};
+TERM::= num:n {:valorV+= n.toString();             guardarLiteral(n.toString());:}
+       |txt:t {:valorV+= t.toString();             guardarLiteral(t.toString());:}
+       |Identificador:i {:valorV+= i.toString();   guardarLiteral(i.toString());:};
 

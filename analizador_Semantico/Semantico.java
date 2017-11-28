@@ -10,6 +10,7 @@ public class Semantico {
 	private ArrayList<Simbolo> tablaG = new ArrayList<Simbolo>();
 	private ArrayList<String> errores = new ArrayList<String>();
 	Stack<Registro_Semantico> pilaSemantica = new Stack<Registro_Semantico>();
+	private Traductor traductor = new Traductor();
         
 	public static Semantico _Instancia;
 	
@@ -175,7 +176,59 @@ public class Semantico {
     	}
     }
     
-    public void tradDeclaracion(){
-    	//if(pilaSemantica.size() > )
+    public void tradDeclaracionGlobal(int linea){
+    	ArrayList<String> tokAux = new ArrayList<String>();
+    	Stack<String> tokens = new Stack<String>();
+    	int indexTS = -1;
+    	for(int i = 0; i < tablaG.size(); i++){
+    		if(pilaSemantica.get(0).getValor().equals(tablaG.get(i).getNombre())){
+    			indexTS = i;
+    			break;
+    		}
+    	}
+    	boolean error = false;
+    	if(indexTS != -1){
+    		for(int i = 0; i < pilaSemantica.size(); i++){
+    			if((pilaSemantica.get(i))instanceof RS_DO){
+	        		if(((RS_DO)pilaSemantica.get(i)).getTipo() == RS_tipo.direccion){
+	        			int indexO = existeEnTS(pilaSemantica.get(i).getValor());
+	        			if(indexO >= 0){
+	        				if(tablaG.get(indexO).getTipo().equals(tablaG.get(indexTS).getTipo())){
+	        					tokAux.add(pilaSemantica.get(i).getValor());
+	        				}else{
+	        					errores.add("Error. Asignacion de tipos distintos. Linea: " + linea);
+	        					error = true;
+	        					break;
+	        				}
+	        			}
+	        		}else{
+	        			tokAux.add(pilaSemantica.get(i).getValor());
+	        		} 
+    			}else{
+        			tokAux.add(pilaSemantica.get(i).getValor());
+        		} 
+        	}
+    			
+        	
+    		if(!error){
+    			if(pilaSemantica.size() > 1){
+    				traductor.addGlobalAsig(pilaSemantica);
+    			}
+            	
+            	pilaSemantica.clear();
+    		}
+        	
+    	}else{
+    		errores.add("Error. La variable '" + pilaSemantica.get(0).getValor() + "' no existe en la Tabla de Simbolos. Linea: " + linea);
+    	}
+    }
+    
+    public int existeEnTS(String var){
+    	for(int i = 0; i < tablaG.size(); i++){
+    		if(var.equals(tablaG.get(i).getNombre())){
+    			return i;
+    		}
+    	}
+    	return -1;
     }
 }

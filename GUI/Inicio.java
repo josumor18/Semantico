@@ -161,6 +161,7 @@ public class Inicio extends JFrame {
 	        try {
 	            sintactico.parse();
 	            sem.printTablaSimbolos();
+	            sem.printPilaSemantica();
 	            res+= sintactico.resultado;
 	            System.out.println(sintactico.resultado);
 	            System.out.println("\n____________________________________________________________________________________________________________________________________________\n");

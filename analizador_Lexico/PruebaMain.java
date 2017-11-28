@@ -40,6 +40,7 @@ public class PruebaMain {
 	a+= "\n- Lista de errores sintacticos encontrados:";
 	System.out.println("- Lista de errores sintacticos encontrados:");
 	try {
+             Semantico.getInstance().prepararAnalisis();
 	     sintactico.parse();
 	     a+= sintactico.resultado;
 	     System.out.println(sintactico.resultado);
@@ -47,9 +48,8 @@ public class PruebaMain {
              
 	} catch (Exception e) {
 	}
-        
-
         Semantico.getInstance().printTablaSimbolos();
-        Sintactico.print_tablaTemp();
+        System.out.println("\n\n\n");
+        Semantico.getInstance().printPilaSemantica();
     } 
 }

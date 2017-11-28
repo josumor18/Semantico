@@ -116,5 +116,44 @@ public class Semantico {
         pilaSemantica.push(rso);
     }
     
+    public void guardarId(String token){
+        RS_DO rsdo = new RS_DO();
+        rsdo.setTipo(RS_tipo.direccion);
+        rsdo.setValor(token);
+        pilaSemantica.push(rsdo);
+    }
+    
+    public void guardarLiteral(String token){
+        RS_DO rsdo = new RS_DO();
+        rsdo.setTipo(RS_tipo.literal);
+        rsdo.setValor(token);
+        pilaSemantica.push(rsdo);
+    }
+    
+    public void printPilaSemantica(){
+        System.out.println("");
+        System.out.println("");
+    	System.out.println("Pila Semantica:");
+    	int i = 0;
+    	for(Registro_Semantico rs : pilaSemantica){
+            System.out.println(i + "   " +rs.getValor());
+            i++;
+        }
+    }
+    
+    
+    public void agregar_a_pilaSemantica(Registro_Semantico s){
+        System.out.println("\t Voy a agregar a la pila: " + s.getValor());
+        pilaSemantica.push(s);
+        /*
+        if(!  (s.getValor().equals("+") || s.getValor().equals("-") || s.getValor().equals("*") 
+                            || s.getValor().equals("/") || s.getValor().equals("++") 
+                            || s.getValor().equals("--")|| s.getValor().equals("="))  ){
+            
+            
+        }
+        */
+    }
+    
     
 }

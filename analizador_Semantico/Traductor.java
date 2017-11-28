@@ -41,7 +41,6 @@ public class Traductor {
 				cargarVariables(s.getTablaG());
 			}
 		}
-		segVariables+= "Datos EndS";
 	}
 	
 	public void addGlobalAsig(Stack<Registro_Semantico> tokens){
@@ -124,6 +123,7 @@ public class Traductor {
 	}
 	
 	public String getEnsamblador(){
+		segVariables+= "Datos EndS";
 		codSegment+= "\nCodigo EndS";
 		ensamblador = segVariables + codSegment;
 		return ensamblador;

@@ -17,6 +17,7 @@ parser code
     private Semantico semantico = Semantico.getInstance();
     private static ArrayList<Simbolo> tablaTemp = new ArrayList<Simbolo>();
     private static ArrayList<Integer> lineaTemp = new ArrayList<Integer>();
+    ArrayList<String> linea = new ArrayList<String>();
     String tipo = "";  //aun necesario
     String tipoB = ""; //no encuentro utilidad
     String valorV = "";
@@ -165,7 +166,8 @@ non terminal Symbol COND_EXPS_SW, EXP_SW, EXPRESION_SW, EXP_COM_SW, EXP_COM2_SW,
 precedence left puntoycoma;
 precedence left coma;
 */
-precedence left  num,txt,Identificador;
+
+precedence left num,txt,Identificador;
 precedence left masmas,menosmenos,igual,masigual,menosigual,porigual, divigual;
 precedence left igualigual,mayque,may,menque,men,dif,or,and,not;
 precedence left mas, menos;
@@ -175,7 +177,6 @@ precedence left para;
 precedence left corcha;
 precedence left corchc;
 precedence left parc;
-
 
 start with INICIO;
 
@@ -269,7 +270,7 @@ DECLAR1::= Identificador:id {:valoresDecMul.push("");	valorV = "";	crear_Local(i
           |Identificador:id DECLAR2 {:crear_Local(id.toString(), (idright+1));:};
 
 DECLAR2::= igual EXP DECLAR3 {:valoresDecMul.push(valorV);	System.out.println(valorV);:}
-          |DECLAR3
+          |DECLAR3 {:valoresDecMul.push("");	valorV = "";:}
           |igual EXP {:valoresDecMul.push(valorV);	valorV = "";	System.out.println(valorV);:};
 
 DECLAR3::= coma DECLAR1;
@@ -506,6 +507,6 @@ TIPO_MODI::= rlong:t {:tipo+= t.toString()+" ";:}
             |rlong:t rlong:tt {:tipo+= t.toString() +" "+ tt.toString()+" ";:}
             |rshort:t {:tipo+= t.toString()+" ";:};
 
-TERM::= num:n {:valorV = n.toString();:}
-       |txt:t {:valorV = t.toString();:}
-       |Identificador:i {:valorV = i.toString();:};
+TERM::= num:n {:valorV = n.toString();	linea.add(n.toString());:}
+       |txt:t {:valorV = t.toString();	linea.add(t.toString());:}
+       |Identificador:i {:valorV = i.toString();	linea.add(i.toString());:};

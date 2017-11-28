@@ -184,44 +184,7 @@ public class Inicio extends JFrame {
 		//String path = "C:/Users/Josu�/Documents/Programas Java/Parser/src/analizadores/regexp.flex";
 		//generateLexer(path);
 		
-		//////////////////////////////////////////////////
-		String valor = "4*(2/(8+6-4)-4)%3";
-		String[] h = valor.split("\\*");
-		for(String f:h){
-			System.out.println(f);
-		}
 		
-		ArrayList<String> valorSplited = new ArrayList<String>();
-		String[] separador = {"\\)","\\*","\\/","%","\\+","-"};
-		String[] valsPar = valor.split("\\(");
-		for(String s:valsPar){
-			if(!s.isEmpty()){
-				valorSplited.add(s);
-				valorSplited.add("(");
-			}
-		}
-		
-		for(String sep:separador){
-			for(int i = 0; i < valorSplited.size(); i++){
-				String[] aux = valorSplited.get(i).split(sep);
-				if(aux.length > 1){
-					valorSplited.remove(i);
-					int i_aux = 0;
-					for(String sA:aux){
-						if(!sA.isEmpty()){
-							valorSplited.add(i+i_aux, sA);
-							valorSplited.add(sep);
-							i_aux+= 2;
-						}
-					}
-				}
-			}
-		}
-		
-		for(String s:valorSplited){
-			System.out.println(s);
-		}
-		//////////////////////////////////////////////////
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

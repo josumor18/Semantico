@@ -2149,7 +2149,7 @@ class CUP$Sintactico$actions {
           case 70: // DECLAR2 ::= DECLAR3 
             {
               Symbol RESULT =null;
-
+		valoresDecMul.push("");	valorV = "";
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("DECLAR2",14, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;

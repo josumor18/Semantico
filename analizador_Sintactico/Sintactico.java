@@ -1395,11 +1395,13 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     	tablaTemp.clear();
     	lineaTemp.clear();
     	pilaTipo.clear();
+    	
+    	semantico.tradDeclaracionFuncion(id, linea);
     }
     
     private void crear_Local_ydel(String id, int linea){
 		Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
-
+		semantico.addSimbolo(nSim, linea);
         valorV = "";
     	tablaTemp.add(nSim);
     	lineaTemp.add(linea);
@@ -1484,8 +1486,8 @@ public class Sintactico extends java_cup.runtime.lr_parser {
                 }
             }
         }
-
-
+        semantico.tradDeclaracionLocal(linea);
+        semantico.delSimbolo(nSim.getNombre(), linea);
     }
 
     private void crear_Local(String id, int linea){
@@ -1493,6 +1495,7 @@ public class Sintactico extends java_cup.runtime.lr_parser {
         pilaTipo.add(tipoTemp);
         pilaTipo.add(tipoTemp);
     	Simbolo nSim = new Simbolo(pilaTipo.pop(), Identificador.Variable, id, valoresDecMul.pop());
+    	semantico.addSimbolo(nSim, linea);
     	valorV = "";
     	tablaTemp.add(nSim);
     	lineaTemp.add(linea);
@@ -1571,6 +1574,8 @@ public class Sintactico extends java_cup.runtime.lr_parser {
                 }
             }
         }
+        semantico.tradDeclaracionLocal(linea);
+        semantico.delSimbolo(nSim.getNombre(), linea);
     }
 
     public static void print_tablaTemp(){

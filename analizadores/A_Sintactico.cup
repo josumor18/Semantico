@@ -29,6 +29,7 @@ parser code
     Stack<String> pilaTipo = new Stack<String>();
     Stack<Registro_Semantico> pilaValor = new Stack<Registro_Semantico>();
     int cantParametros = 0;
+    RS_Operador tempO = new RS_Operador(); 
 
 
     //Metodo al que se llama automaticamente ante algun error sintactico
@@ -362,6 +363,99 @@ parser code
     }
 
 
+
+    public void addPilaSemantica_Asig(String id, int linea){
+        System.out.println("Estoy agregando   " +id + "   de la linea  " + linea);
+        semantico.guardarId(id);
+        //pilaValor = semantico.invertirPila(pilaValor);
+        
+        if (!pilaValor.isEmpty()){
+            if(!(pilaValor.peek().getValor().equals("--") || pilaValor.peek().getValor().equals("++"))){
+                RS_Operador tt = new RS_Operador();
+                tt.setValor(tempO.getValor());
+                pilaValor.push(tt);
+                
+            }
+            Registro_Semantico temp;
+            temp = pilaValor.pop();
+            if(semantico.es_signo_asignacion(temp.getValor())){
+                semantico.agregar_a_pilaSemantica(temp);
+                temp = pilaValor.pop();
+
+                if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                 }
+                
+                semantico.agregar_a_pilaSemantica(temp);
+                while(!pilaValor.isEmpty()){
+                    temp = pilaValor.pop();
+
+
+
+                    if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                    }
+                
+
+
+                    if(!temp.getValor().equals("=")){
+                        semantico.agregar_a_pilaSemantica(temp);
+                    }
+                    else{
+                        pilaValor.push(temp);
+                        break;
+                    }
+                }
+            }
+            //viene operador -- o ++ (dec o inc)
+            else{
+                semantico.agregar_a_pilaSemantica(temp);
+            }
+        }
+        semantico.tradAsigLocal(tablaTemp, linea);
+    }
+
+    
+
+
 :}
 
 //------> Codigo para las acciones gramaticales
@@ -438,9 +532,9 @@ GLOBAL_FACT::= INI_A PT
 	          |TIPO_GLOBAL Identificador:id PT {:valoresDecMul.push("");	crear_Global_ydel(id.toString(), (idright+1));:}
 	          |TIPO_GLOBAL Identificador:id DECLARS_BAS1 coma INI_A PT {:crear_Global_ydel(id.toString(), (idright+1));   :}
 	          |TIPO_GLOBAL Identificador:id coma INI_A PT {:valoresDecMul.push("");	crear_Global_ydel(id.toString(), (idright+1));:}
-              |TIPO_GLOBAL PT
-              |error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1);:}	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1));:}
-              |TIPO_GLOBAL error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
+                  |TIPO_GLOBAL PT
+                  |error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1);:}	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1) + ". Recupera en:" + (zright + 1));:}
+                  |TIPO_GLOBAL error:s PT:z {:resultado+= "\n\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1);:};	//{:System.out.println("\tError al declarar una variable global. Linea: " + (sright+1)  + ". Recuperado en: " + (zright+1));:};
 
 PT::= puntoycoma PT
      |puntoycoma;
@@ -668,11 +762,11 @@ READ::= rread para parc
 WRITE::= rwrite para EXP parc
 		|rwrite para Identificador ARIT_ASIG2 parc;
 
-ASIGNACION::= Identificador ASIGNACION1 ASIGNACION2
-			 |Identificador ASIGNACION1;
+ASIGNACION::= Identificador:id ASIGNACION1              {:addPilaSemantica_Asig(id.toString(), (idright+1));:}
+	     |Identificador:id ASIGNACION1  ASIGNACION2 {:addPilaSemantica_Asig(id.toString(), (idright+1));:};
 
 ASIGNACION1::= EXP_ASIG
-           	  |ARIT_ASIG2;
+               |ARIT_ASIG2;
 
 ASIGNACION2::= coma ASIGNACION;
 
@@ -719,11 +813,11 @@ ARIT1::= mas:v {:valorV+= v.toString();                 guardarOperador(v.toStri
         |div:v {:valorV+= v.toString();                 guardarOperador(v.toString());:}
         |mod:v {:valorV+= v.toString();                 guardarOperador(v.toString());:};
 
-ARIT_ASIG::= igual
-            |masigual
-            |menosigual
-            |porigual
-            |divigual;
+ARIT_ASIG::= igual:o        {:                          tempO.setValor(o.toString());:}
+            |masigual:o     {:                          tempO.setValor(o.toString());:}
+            |menosigual:o   {:                          tempO.setValor(o.toString());:}
+            |porigual:o     {:                          tempO.setValor(o.toString());:}
+            |divigual:o     {:                          tempO.setValor(o.toString());:};
             
 ARIT_ASIG2::= masmas:v    {:valorV+= v.toString();                 guardarOperador(v.toString());:}
              |menosmenos:v{:valorV+= v.toString();                 guardarOperador(v.toString());:};

@@ -99,7 +99,7 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     "\002\053\003\000\002\054\003\000\002\055\006\000\002" +
     "\055\004\000\002\055\004\000\002\056\003\000\002\056" +
     "\003\000\002\057\005\000\002\057\006\000\002\060\006" +
-    "\000\002\060\007\000\002\061\005\000\002\061\004\000" +
+    "\000\002\060\007\000\002\061\004\000\002\061\005\000" +
     "\002\062\003\000\002\062\003\000\002\063\004\000\002" +
     "\064\004\000\002\064\003\000\002\065\003\000\002\065" +
     "\005\000\002\066\004\000\002\067\010\000\002\067\007" +
@@ -375,10 +375,10 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     "\uff42\010\uff42\014\uff42\015\uff42\016\uff42\017\uff42\020\uff42" +
     "\021\uff42\022\uff42\027\uff42\030\uff42\031\uff42\032\uff42\033" +
     "\uff42\034\uff42\035\uff42\036\uff42\037\uff42\061\uff42\062\uff42" +
-    "\001\002\000\054\006\uff43\007\uff43\010\uff43\014\uff43\015" +
-    "\uff43\016\uff43\017\uff43\020\uff43\021\uff43\022\uff43\027\uff43" +
-    "\030\uff43\031\uff43\032\uff43\033\uff43\034\uff43\035\uff43\036" +
-    "\uff43\037\uff43\061\uff43\062\uff43\001\002\000\020\006\uff1d" +
+    "\001\002\000\054\006\uff44\007\uff44\010\uff44\014\uff44\015" +
+    "\uff44\016\uff44\017\uff44\020\uff44\021\uff44\022\uff44\027\uff44" +
+    "\030\uff44\031\uff44\032\uff44\033\uff44\034\uff44\035\uff44\036" +
+    "\uff44\037\uff44\061\uff44\062\uff44\001\002\000\020\006\uff1d" +
     "\007\uff1d\010\uff1d\014\uff1d\015\uff1d\021\uff1d\037\uff1d\001" +
     "\002\000\020\006\uff20\007\uff20\010\uff20\014\uff20\015\uff20" +
     "\021\uff20\037\uff20\001\002\000\054\006\uff41\007\uff41\010" +
@@ -387,10 +387,10 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     "\uff41\035\uff41\036\uff41\037\uff41\061\uff41\062\uff41\001\002" +
     "\000\020\006\uff21\007\uff21\010\uff21\014\uff21\015\uff21\021" +
     "\uff21\037\uff21\001\002\000\004\010\245\001\002\000\054" +
-    "\006\uff44\007\uff44\010\uff44\014\uff44\015\uff44\016\uff44\017" +
-    "\uff44\020\uff44\021\uff44\022\uff44\027\uff44\030\uff44\031\uff44" +
-    "\032\uff44\033\uff44\034\uff44\035\uff44\036\uff44\037\uff44\061" +
-    "\uff44\062\uff44\001\002\000\054\006\uff40\007\uff40\010\uff40" +
+    "\006\uff43\007\uff43\010\uff43\014\uff43\015\uff43\016\uff43\017" +
+    "\uff43\020\uff43\021\uff43\022\uff43\027\uff43\030\uff43\031\uff43" +
+    "\032\uff43\033\uff43\034\uff43\035\uff43\036\uff43\037\uff43\061" +
+    "\uff43\062\uff43\001\002\000\054\006\uff40\007\uff40\010\uff40" +
     "\014\uff40\015\uff40\016\uff40\017\uff40\020\uff40\021\uff40\022" +
     "\uff40\027\uff40\030\uff40\031\uff40\032\uff40\033\uff40\034\uff40" +
     "\035\uff40\036\uff40\037\uff40\061\uff40\062\uff40\001\002\000" +
@@ -1276,6 +1276,7 @@ public class Sintactico extends java_cup.runtime.lr_parser {
     Stack<String> pilaTipo = new Stack<String>();
     Stack<Registro_Semantico> pilaValor = new Stack<Registro_Semantico>();
     int cantParametros = 0;
+    RS_Operador tempO = new RS_Operador(); 
 
 
     //Metodo al que se llama automaticamente ante algun error sintactico
@@ -1607,6 +1608,99 @@ public class Sintactico extends java_cup.runtime.lr_parser {
         rsdo.setValor(token);
         pilaValor.push(rsdo);
     }
+
+
+
+    public void addPilaSemantica_Asig(String id, int linea){
+        System.out.println("Estoy agregando   " +id + "   de la linea  " + linea);
+        semantico.guardarId(id);
+        //pilaValor = semantico.invertirPila(pilaValor);
+        
+        if (!pilaValor.isEmpty()){
+            if(!(pilaValor.peek().getValor().equals("--") || pilaValor.peek().getValor().equals("++"))){
+                RS_Operador tt = new RS_Operador();
+                tt.setValor(tempO.getValor());
+                pilaValor.push(tt);
+                
+            }
+            Registro_Semantico temp;
+            temp = pilaValor.pop();
+            if(semantico.es_signo_asignacion(temp.getValor())){
+                semantico.agregar_a_pilaSemantica(temp);
+                temp = pilaValor.pop();
+
+                if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                 }
+                
+                semantico.agregar_a_pilaSemantica(temp);
+                while(!pilaValor.isEmpty()){
+                    temp = pilaValor.pop();
+
+
+
+                    if(temp.getClass().getName().equals("analizador_Semantico.RS_DO")){
+                        RS_DO rsdo = (RS_DO)temp;
+                        if(rsdo.getTipo().equals(RS_tipo.direccion)){
+                            String temptemp = rsdo.getValor();
+                            boolean flag = false;
+                            if(!semantico.estaDefinidoGlobales(temptemp)){
+                                flag = true;
+                            }
+                            if(flag){
+                                for(Simbolo sim : tablaTemp){
+                                    if(sim.getNombre().equals(temptemp)){
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(flag){
+                                semantico.addError("variable " + temptemp + " no definida. linea: " + linea );
+                            }
+                            
+                        }
+                    }
+                
+
+
+                    if(!temp.getValor().equals("=")){
+                        semantico.agregar_a_pilaSemantica(temp);
+                    }
+                    else{
+                        pilaValor.push(temp);
+                        break;
+                    }
+                }
+            }
+            //viene operador -- o ++ (dec o inc)
+            else{
+                semantico.agregar_a_pilaSemantica(temp);
+            }
+        }
+        semantico.tradAsigLocal(tablaTemp, linea);
+    }
+
+    
 
 
 
@@ -3594,20 +3688,26 @@ class CUP$Sintactico$actions {
           return CUP$Sintactico$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 189: // ASIGNACION ::= Identificador ASIGNACION1 ASIGNACION2 
+          case 189: // ASIGNACION ::= Identificador ASIGNACION1 
             {
               Symbol RESULT =null;
-
-              CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ASIGNACION",47, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-2)), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
+		int idleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-1)).left;
+		int idright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-1)).right;
+		Object id = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-1)).value;
+		addPilaSemantica_Asig(id.toString(), (idright+1));
+              CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ASIGNACION",47, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-1)), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 190: // ASIGNACION ::= Identificador ASIGNACION1 
+          case 190: // ASIGNACION ::= Identificador ASIGNACION1 ASIGNACION2 
             {
               Symbol RESULT =null;
-
-              CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ASIGNACION",47, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-1)), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
+		int idleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-2)).left;
+		int idright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-2)).right;
+		Object id = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-2)).value;
+		addPilaSemantica_Asig(id.toString(), (idright+1));
+              CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ASIGNACION",47, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.elementAt(CUP$Sintactico$top-2)), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
 
@@ -3957,7 +4057,10 @@ class CUP$Sintactico$actions {
           case 224: // ARIT_ASIG ::= igual 
             {
               Symbol RESULT =null;
-
+		int oleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).left;
+		int oright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).right;
+		Object o = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.peek()).value;
+		                          tempO.setValor(o.toString());
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ARIT_ASIG",59, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
@@ -3966,7 +4069,10 @@ class CUP$Sintactico$actions {
           case 225: // ARIT_ASIG ::= masigual 
             {
               Symbol RESULT =null;
-
+		int oleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).left;
+		int oright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).right;
+		Object o = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.peek()).value;
+		                          tempO.setValor(o.toString());
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ARIT_ASIG",59, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
@@ -3975,7 +4081,10 @@ class CUP$Sintactico$actions {
           case 226: // ARIT_ASIG ::= menosigual 
             {
               Symbol RESULT =null;
-
+		int oleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).left;
+		int oright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).right;
+		Object o = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.peek()).value;
+		                          tempO.setValor(o.toString());
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ARIT_ASIG",59, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
@@ -3984,7 +4093,10 @@ class CUP$Sintactico$actions {
           case 227: // ARIT_ASIG ::= porigual 
             {
               Symbol RESULT =null;
-
+		int oleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).left;
+		int oright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).right;
+		Object o = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.peek()).value;
+		                          tempO.setValor(o.toString());
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ARIT_ASIG",59, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;
@@ -3993,7 +4105,10 @@ class CUP$Sintactico$actions {
           case 228: // ARIT_ASIG ::= divigual 
             {
               Symbol RESULT =null;
-
+		int oleft = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).left;
+		int oright = ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()).right;
+		Object o = (Object)((java_cup.runtime.Symbol) CUP$Sintactico$stack.peek()).value;
+		                          tempO.setValor(o.toString());
               CUP$Sintactico$result = parser.getSymbolFactory().newSymbol("ARIT_ASIG",59, ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), ((java_cup.runtime.Symbol)CUP$Sintactico$stack.peek()), RESULT);
             }
           return CUP$Sintactico$result;

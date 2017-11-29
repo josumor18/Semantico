@@ -1,12 +1,15 @@
 package analizador_Semantico;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Stack;
 
 public class Traductor {
 	private String ensamblador;
 	private String segVariables = ".data\n";
-	private String codSegment = "\n\n.code\n\t\n";
+	private String codSegment = "\n\n.code\n";
 	private String local = "";
 	private String globales = "";
 	private boolean[] regUsados = new boolean[2];
@@ -19,7 +22,7 @@ public class Traductor {
 	public void clear(){
 		ensamblador = "";
 		segVariables = ".data\n";
-		codSegment = "\n\n.code\n\t\n";
+		codSegment = "\n\n.code\n";
 		local = "";
 		globales = "";
 		regUsados = new boolean[2];
@@ -110,7 +113,9 @@ public class Traductor {
 		local+= "\n";
 		String var = tokens.get(0).getValor();
 		tokens.remove(0);
-		tokens.remove(0);
+		if(tokens.size() > 1){
+			tokens.remove(0);
+		}
 		for(int i = 0; i < tokens.size(); i++){
 			if((tokens.get(i)) instanceof RS_DO){
 				if(((RS_DO)tokens.get(i)).getTipo() == RS_tipo.direccion){
@@ -122,20 +127,21 @@ public class Traductor {
 				if(((RS_Operador)tokens.get(i)).getValor().equals("=")){
 					local+="\n\t\tmov " + var + "," + getRegUsado();
 				}else if(((RS_Operador)tokens.get(i)).getValor().equals("++")){
-					colocarVar(tokens.get(i+1).getValor());
+					//colocarVarL(tokens.get(i+1).getValor());
 					//codSegment+="\n\tadd " + getRegUsado() + ",";
 					//codSegment+= getRegUsado();
+					local+="\n\t\tmov ax," + var;
 					local+="\n\t\tinc ax";
-					local+="\n\t\tmov " + tokens.get(i+1).getValor() + ",ax";
-					tokens.remove(i+1);
+					//local+="\n\t\tmov " + var + ",ax";
 					liberarRegistro("ax");
 				}else if(((RS_Operador)tokens.get(i)).getValor().equals("--")){
-					colocarVar(tokens.get(i+1).getValor());
+					//colocarVarL(tokens.get(i+1).getValor());
 					//codSegment+="\n\tadd " + getRegUsado() + ",";
 					//codSegment+= getRegUsado();
+					local+="\n\t\tmov ax," + var;
 					local+="\n\t\tdec ax";
-					local+="\n\t\tmov " + tokens.get(i+1).getValor() + ",ax";
-					tokens.remove(i+1);
+					//local+="\n\t\tmov " + var + ",ax";
+					//tokens.remove(i+1);
 					liberarRegistro("ax");
 				}else if(((RS_Operador)tokens.get(i)).getValor().equals("+")){
 					colocarVarL(tokens.get(i+1).getValor());
@@ -176,7 +182,8 @@ public class Traductor {
 	
 	public void tradFunciones(String idFunc){
 		funciones.push(idFunc);
-		codSegment+="\n\n\t" + idFunc + " Proc\n" + local;
+		codSegment+="\n\t" + idFunc + " Proc\n" + local;
+		local = "";
 	}
 	
 	private void asigVar(String var){
@@ -196,7 +203,7 @@ public class Traductor {
 	
 	private void asigVarL(String var){
 		local+="\n\t\tmov " + var + ",ax";// + 
-		getRegUsado(); 
+		getRegUsado();
 	}
 	
 	private void colocarVarL(String var){
@@ -258,5 +265,20 @@ public class Traductor {
 	public String getEnsamblador(){
 		ensamblador = segVariables + codSegment;
 		return ensamblador;
+	}
+	
+	public void generarArchivo(String nombre){
+		nombre+= ".asm";
+		try{
+			FileWriter fichero = null;
+			PrintWriter pw = null;
+			fichero = new FileWriter(nombre);
+			pw = new PrintWriter(fichero);
+			
+			pw.print(ensamblador);
+			fichero.close();
+		}catch(Exception e){
+			System.out.println(e);
+		}
 	}
 }

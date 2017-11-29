@@ -99,26 +99,23 @@ public class Semantico {
     	return tLocales;
     }
     
-    public void printTablaSimbolos(){
+    public String printTablaSimbolos(){
+    	String tS = "Tabla de simbolos:\n";
     	System.out.println("Tabla de simbolos:");
     	
     	for(Simbolo s:tablaG){
                 String imp2 = "";
     		String imp = s.getTipo() + " " + s.getNombre();
-    		if(s.getId() == Identificador.Variable){
-    			imp+= "= " + s.getValor();
-    		}
+    		tS+= imp + "\n";
     		System.out.println(imp);
     		for(Simbolo sh:s.getTablaG()){
                         imp2 += "\t" + sh.getTipo() + " " + sh.getNombre();
-    			
-                        if(sh.getId() == Identificador.Variable){
-                               imp2 += "= " + sh.getValor();
-                        }
+                        tS+= imp2 + "\n";
                         System.out.println(imp2);
                         imp2 = "";
     		}
     	}
+    	return tS;
     }
     
     public void guardarOperador(String token){
@@ -154,7 +151,6 @@ public class Semantico {
     
     
     public void agregar_a_pilaSemantica(Registro_Semantico s){
-        System.out.println("\t Voy a agregar a la pila: " + s.getValor());
         pilaSemantica.push(s);
         /*
         if(!  (s.getValor().equals("+") || s.getValor().equals("-") || s.getValor().equals("*") 
@@ -290,9 +286,109 @@ public class Semantico {
         	
     	}else{
     		errores.add("Error. La variable '" + pilaSemantica.get(0).getValor() + "' no existe en la Tabla de Simbolos. Linea: " + linea);
+
+    		
     	}
 
     	pilaSemantica.clear();
+    }
+    
+    public void tradAsigLocal(ArrayList<Simbolo> tablaT, int linea){
+    	ArrayList<String> tokAux = new ArrayList<String>();
+    	Stack<String> tokens = new Stack<String>();
+    	int indexTS = -1;
+    	for(int i = 0; i < tablaT.size(); i++){
+    		if(pilaSemantica.get(0).getValor().equals(tablaT.get(i).getNombre())){
+    			indexTS = i;
+    			break;
+    		}
+    	}
+    	boolean error = false;
+    	if(indexTS != -1){
+    		for(int i = 0; i < pilaSemantica.size(); i++){
+    			if((pilaSemantica.get(i))instanceof RS_DO){
+	        		if(((RS_DO)pilaSemantica.get(i)).getTipo() == RS_tipo.direccion){
+	        			int indexO = existeEnTSF(pilaSemantica.get(i).getValor(), tablaT);
+	        			if(indexO >= 0){
+	        				if(tablaT.get(indexO).getTipo().equals(tablaT.get(indexTS).getTipo())){
+	        					tokAux.add(pilaSemantica.get(i).getValor());
+	        				}else{
+	        					errores.add("Error. Asignacion de tipos distintos. Linea: " + linea);
+	        					error = true;
+	        					break;
+	        				}
+	        			}
+	        		}else{
+	        			tokAux.add(pilaSemantica.get(i).getValor());
+	        		} 
+    			}else{
+        			tokAux.add(pilaSemantica.get(i).getValor());
+        		} 
+        	}
+    			
+        	
+    		if(!error){
+    			if(pilaSemantica.size() > 1){
+    				traductor.addLocalAsig(pilaSemantica);
+    			}
+            	
+    		}
+        	
+    	}else{
+    		indexTS = -1;
+        	for(int i = 0; i < tablaG.size(); i++){
+        		if(pilaSemantica.get(0).getValor().equals(tablaG.get(i).getNombre())){
+        			indexTS = i;
+        			break;
+        		}
+        	}
+        	
+        	if(indexTS != -1){
+        		for(int i = 0; i < pilaSemantica.size(); i++){
+        			if((pilaSemantica.get(i))instanceof RS_DO){
+    	        		if(((RS_DO)pilaSemantica.get(i)).getTipo() == RS_tipo.direccion){
+    	        			int indexO = existeEnTS(pilaSemantica.get(i).getValor());
+    	        			if(indexO >= 0){
+    	        				if(tablaG.get(indexO).getTipo().equals(tablaG.get(indexTS).getTipo())){
+    	        					tokAux.add(pilaSemantica.get(i).getValor());
+    	        				}else{
+    	        					errores.add("Error. Asignacion de tipos distintos. Linea: " + linea);
+    	        					error = true;
+    	        					break;
+    	        				}
+    	        			}
+    	        		}else{
+    	        			tokAux.add(pilaSemantica.get(i).getValor());
+    	        		} 
+        			}else{
+            			tokAux.add(pilaSemantica.get(i).getValor());
+            		} 
+            	}
+        			
+            	
+        		if(!error){
+        			if(pilaSemantica.size() > 1){
+        				traductor.addLocalAsig(pilaSemantica);
+        			}
+                	
+        		}
+            	
+        	}else{
+        		errores.add("Error. La variable '" + pilaSemantica.get(0).getValor() + "' no existe en la Tabla de Simbolos. Linea: " + linea);
+        	}
+    		
+    	}
+
+    	pilaSemantica.clear();
+    }
+    
+    public int existeEnTSF(String var, ArrayList<Simbolo> tablaT){
+    	for(int i = 0; i < tablaT.size(); i++){
+    		if(var.equals(tablaT.get(i).getNombre())){
+    			return i;
+    		}
+    	}
+    	return -1;
     }
     
     public boolean estaDefinidoGlobales(String id){
@@ -308,15 +404,37 @@ public class Semantico {
         errores.add(error);
     }
     
-    public void printErrores(){
+    public String printErrores(){
+    	String err = "\n\n LISTA DE ERRORES SEMANTICOS:\n";
         System.out.println("\n\n LISTA DE ERRORES: ");
         for(String s : errores){
+        	err+= "\t" + s + "\n"; 
             System.out.println("\t" + s);
         }
+        return err;
     }
     
-    public void printEnsamblador(){
+    public void genEnsamblador(String ruta){
     	traductor.cargarVariables(tablaG);
     	System.out.println(traductor.getEnsamblador());
+    	String[] vr = ruta.split("\\\\");
+    	int s = vr.length;
+    	String[] n = (vr[s-1]).split("\\.");
+    	traductor.generarArchivo(n[0]);
+    }
+    
+    public Stack<Registro_Semantico> invertirPila(Stack<Registro_Semantico> pila){
+        Stack<Registro_Semantico> res  = new Stack<>();
+        while(!pila.isEmpty()){
+            res.push(pila.pop());
+        }
+        return res;
+    }
+    
+    public boolean es_signo_asignacion(String s){
+        if(s.equals("=") || s.equals("-=") || s.equals("+=") || s.equals("*=") || s.equals("/=")){
+            return true;
+        }
+        return false;
     }
 }

@@ -53,7 +53,7 @@ public class Inicio extends JFrame {
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setFont(new Font("Tahoma", Font.PLAIN, 11));
-		setTitle("Parser de C");
+		setTitle("Compilador de C");
 		getContentPane().setLayout(null);
 		
 		JLabel lblArchivo = new JLabel("Archivo:");
@@ -87,7 +87,7 @@ public class Inicio extends JFrame {
 		btnSeleccionar.setBounds(525, 57, 111, 23);
 		getContentPane().add(btnSeleccionar);
 		
-		JLabel lblTituloAnalizador = new JLabel("PARSER");
+		JLabel lblTituloAnalizador = new JLabel("COMPILADOR DE C");
 		lblTituloAnalizador.setFont(new Font("Tahoma", Font.BOLD, 20));
 		lblTituloAnalizador.setBounds(10, 11, 227, 37);
 		getContentPane().add(lblTituloAnalizador);
@@ -160,11 +160,15 @@ public class Inicio extends JFrame {
 	        System.out.println("- Lista de errores sintacticos encontrados:");
 	        try {
 	            sintactico.parse();
-	            sem.printTablaSimbolos();
-	            sem.printPilaSemantica();
-	            System.out.println("\n\nCódigo:\n\n");
-	            sem.printEnsamblador();
+	            //sem.printTablaSimbolos();
+	            //sem.printPilaSemantica();
+	            //System.out.println("\n\nCódigo:\n\n");
+	            //sem.printEnsamblador();
+	            //sem.printErrores();
 	            res+= sintactico.resultado;
+	            res+= "\n\n--------------------------------------------------------------------------------";
+	            res+= "\n\nRESULTADO ANALISIS SEMANTICO:\n\n" + sem.printTablaSimbolos() + "\n" + sem.printErrores();
+	            sem.genEnsamblador(archivo);
 	            System.out.println(sintactico.resultado);
 	            System.out.println("\n____________________________________________________________________________________________________________________________________________\n");
 	            lblMensaje.setText("Analisis ejecutado");
